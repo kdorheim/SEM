@@ -43,4 +43,16 @@ convert_nc_SEM <- function(nc_path){
 }
 
 
+#' Convert a netcdf file into a data frame that can be used by SEM
+#'
+#'
+#' @param temp numeric in degrees C to be converted into degrees K
+#' @return numeric vector of the temperature in K 
+#' @noRd
+convert_temp_C_K <- function(temp){
+  out <- temp + 273.15
+  return(out)
+}
+
+
 
