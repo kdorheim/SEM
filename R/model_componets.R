@@ -1,36 +1,32 @@
-#' Arrhenius formula for temperature dependence of reaction rates 
+#' Arrhenius formula for temperature dependence of reaction rates
 #'
 #' @param observed.value value in deg C
 #' @param new.temp value in deg C
 #' @param old.temp default value of 25
-#' @return numeric value 
+#' @return numeric value
 #' @noRd
 arrhenius <- function(observed.value, new.temp, old.temp = 25) {
-  
   new.temp <- convert_temp_C_K(new.temp)
   old.temp <- convert_temp_C_K(old.temp)
-  
   out <- observed.value / exp(3000 * (1 / new.temp - 1 / old.temp))
-  
   return(out)
 }
 
 
-#' Ballberry function 
-#' 
-#' @details 
-#' This actually the Medlyn et al 2011 model as used in Dietze, Michael C.,
-#' and Jaclyn Hatala Matthes. 2014. “A General Ecophysiological Framework 
-#' for Modelling the Impact of Pests and Pathogens on Forest Ecosystems.” 
-#' Ecology Letters 17 (11): 1418–26.
+#' Ballberry function
 #'
-#' @param input vector length 2 unkown what these things are supposed to be gah 
-#' @param BBparams vector of two parameters 
+#' @details This actually the Medlyn et al 2011 model as used in Dietze,
+#' Michael C., and Jaclyn Hatala Matthes. 2014. “A General
+#' Ecophysiological Framework for Modelling the Impact of Pests and
+#' Pathogens on Forest Ecosystems.” Ecology Letters 17 (11): 1418–26.
+#'
+#' @param input vector length 2 unkown what these things are supposed to be gah
+#' @param BBparams vector of two parameters
 #' \describe{
 #'  \item{g0}{Cuticular conductance}
 #'  \item{m}{Stomatal slope}
 #'  }
-#' @param Fparams vector of the \link{farquhar} parameters 
+#' @param Fparams vector of the \link{farquhar} parameters
 #' \describe{
 #'  \item{alpha}{Quantum yield}
 #'  \item{Jmax}{TBD}
@@ -46,16 +42,16 @@ arrhenius <- function(observed.value, new.temp, old.temp = 25) {
 #'  }
 #' @return numeric value  TBD
 #' @noRd
-ballberry <- function(input, BBparams, Fparams, obs){
-  
-  assert_that(check_contents(req = c("Ca", "VPD"), check = names(obs)), msg = "obs")
-  assert_that(check_contents(req = c("g0", "m"), check = names(BBparams)), msg = "BBparams")
-  
+ballberry <- function(input, BBparams, Fparams, obs) {
+  assert_that(check_contents(req = c("Ca", "VPD"), check = names(obs)),
+              msg = "obs")
+  assert_that(check_contents(req = c("g0", "m"), check = names(BBparams)),
+              msg = "BBparams")
   ## is actually the Medlyn et al 2011 model
-  Ci <- obs[["Ca"]] - 1.6 * input[1]/input[2]
+  Ci <- obs[["Ca"]] - 1.6 * input[1] / input[2]
   e1 <- (farquhar(Ci = Ci, Fparams = Fparams, I = obs[["PAR"]]) - input[1])
-  e2 <- (BBparams[["g0"]] + BBparams[["m"]] * input[1]/((obs[["Ca"]] - Fparams[["Gstar"]]) * (1 + obs[["VPD"]])) - input[2]) * 100  
-  
+  e2 <- (BBparams[["g0"]] + BBparams[["m"]] * input[1] / ( (obs[["Ca"]] - Fparams[["Gstar"]]) *
+                                                          (1 + obs[["VPD"]])) - input[2]) * 100  
   out <- e1^2 + e2^2
   names(out) <- NULL
   return(out)
@@ -143,4 +139,3 @@ solve.FVcB <- function(Vcmax, Jmax, Rleaf, Gstar, alpha, m, g0, VPD, PAR, Km, Ca
   }
   return(out)
 }
-  
