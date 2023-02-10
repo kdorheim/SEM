@@ -7,7 +7,8 @@
 convert_nc_SEM(nc_path)
 }
 \arguments{
-\item{nc_path}{character path to the .nc file of met data, this file must contain PAR, temp, VPD, and precip dagta}
+\item{nc_path}{\describe{character path to the .nc file of met data, this
+file must contain PAR, temp, VPD, and precip data}}
 }
 \value{
 a data frame consisting of columns of the following:

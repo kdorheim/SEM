@@ -8,9 +8,11 @@
 #' @return TRUE if the all required elements are within the check vector
 #'  otherwise an error is thrown.
 check_contents <- function(req, check) {
+  
   assert_that(is.vector(req))
   assert_that(is.vector(check))
   missing <- setdiff(req, check)
+  
   if (length(missing) == 0) {
     return(TRUE)
     } else {

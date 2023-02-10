@@ -6,9 +6,12 @@
 #' @return numeric value
 #' @noRd
 arrhenius <- function(observed.value, new.temp, old.temp = 25) {
+  
   new.temp <- convert_temp_C_K(new.temp)
   old.temp <- convert_temp_C_K(old.temp)
+  
   out <- observed.value / exp(3000 * (1 / new.temp - 1 / old.temp))
+  
   return(out)
 }
 
@@ -43,10 +46,12 @@ arrhenius <- function(observed.value, new.temp, old.temp = 25) {
 #' @return numeric value  TBD
 #' @noRd
 ballberry <- function(input, BBparams, Fparams, obs) {
+  
   assert_that(check_contents(req = c("Ca", "VPD"), check = names(obs)),
               msg = "obs")
   assert_that(check_contents(req = c("g0", "m"), check = names(BBparams)),
               msg = "BBparams")
+  
   ## is actually the Medlyn et al 2011 model
   Ci <- obs[["Ca"]] - 1.6 * input[1] / input[2]
   e1 <- (farquhar(Ci = Ci, Fparams = Fparams, I = obs[["PAR"]]) - input[1])
@@ -54,6 +59,7 @@ ballberry <- function(input, BBparams, Fparams, obs) {
                                                           (1 + obs[["VPD"]])) - input[2]) * 100  
   out <- e1^2 + e2^2
   names(out) <- NULL
+  
   return(out)
 }
 
@@ -85,7 +91,7 @@ farquhar <- function(Ci, Fparams, I){
   assert_that(check_contents(req, check = names(Fparams)))
   
   a <- 0.9 ## curvature parameter
-  b <--(Fparams[["alpha"]] * I + Fparams[["Jmax"]])
+  b <- -(Fparams[["alpha"]] * I + Fparams[["Jmax"]])
   c <- Fparams[["alpha"]] * I * Fparams[["Jmax"]]
   J <- (-b-sqrt(b^2-4*a*c))/(2*a)
   

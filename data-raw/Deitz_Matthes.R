@@ -287,18 +287,23 @@ if(!exists('inputs')){
   VPD  = ncvar_get(met,"VPD")
   precip = ncvar_get(met,"PREC")
   time = ncvar_get(met,"DOY")
+  time <- time[1:5]
+  ncvar_get(met, "DOY")
+  
   nc_close(met)
   plot(PAR,type='l')
   plot(temp,type='l')
   plot(VPD,type='l')  
   plot(precip,type='l')  
-  inputs = data.frame(PAR=PAR,temp=temp,VPD=VPD,precip=precip)    
+  inputs = data.frame(PAR=PAR,temp=temp,VPD=VPD,precip=precip, time = seq(as.POSIXct("2005-01-01 00:00"), as.POSIXct("2005-12-31 23:30"),by = 1800))
+  inputs <- inputs[65:70, ]
+  inputs$time <- NULL
 }
 
 varnames <- c("Bleaf","Bwood","Broot","Bstore","BSOM","Water","density","GPP","fopen","Rleaf","RstemRroot","Rgrow")
 units <- c("kg/plant","kg/plant","kg/plant","kg/plant","Mg/ha","m","stems/ha")
 
-iterate.SEM <- function(pest,t.start = 7000,years = 1){
+iterate.SEM <- function(pest,t.start = 0,years = 1){
   
   pest.orig = pest
   pest = c(0,0,0,1,0)
@@ -324,7 +329,18 @@ iterate.SEM <- function(pest,t.start = 7000,years = 1){
   
 } # end iterate.SEM
 
+# X
+# 2.579324  26.956056   2.579324   2.579324  10.000000   1.000000 700.000000
+# pest  c(0,0,0,1,0) 
+
+
+
 # Save output as comparison data
 default = iterate.SEM(c(0,0,0,1,0))
+
+
+
+
+
 write.csv("tests/testthat/DM_old_new.csv", row.names = FALSE)
 
