@@ -212,6 +212,36 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 
 # TODO need to test against a the DM stuff and then need to better figure out the parameter list... is everything actually defined in there? 
 # are there things we need to do... it only models 1 type of tree at a time do we do an average? 
+#' SEM model 
+#'
+#' @param pest named vector for the pest impacts 
+#' \describe{
+#' \item{phloem}{phloem feaders}
+#' \item{xylem}{xylem disrupters (bark beetle, canker, wilt, girdling)}
+#' \item{leaf}{defoliators}
+#' \item{root}{root rot}
+#' \item{stem}{stem rot}
+#' @parm pest.time NULL or vector of the times to apply the pest disturbance to 
+#' @param inputs named numeric vector containing the meteorological variables at a single time point
+#' \describe{
+#' \item{temp}{Air temperature, degrees C}
+#' \item{precip}{Precipitation, mm}
+#' \item{VPD}{Vapor pressure deficit, kPa}
+#' \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
+#' \item{time}{as.POSIXct date fromat, must be every 30 min}
+#' }
+#' @param X named numeric vector containing the following
+#' \describe{
+#' \item{leaf}{kg/plant}
+#' \item{wood}{kg/plant}
+#' \item{root}{kg/plant}
+#' \item{storage}{kg/plant}
+#' \item{som}{soil organic matter, Mg/ha}
+#' \item{soil_water}{m}
+#' \item{stem_density}{stems/ha}
+#' }
+#' @param params named vector TBD
+#' @return vector of results
 run_SEM <- function(pest, pest.time, inputs, X, params){
   
   # Check the inputs
