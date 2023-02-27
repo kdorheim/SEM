@@ -1,5 +1,5 @@
 Package: SEM
-Title: What the Package Does (One Line, Title Case)
+Title: Simple Ecosystem Model
 Version: 0.0.0.9000
 Authors@R: 
     person("Kalyn", "Dorheim", , "kalyn.dorheim@pnnl.com", role = c("trl", "cre"),
