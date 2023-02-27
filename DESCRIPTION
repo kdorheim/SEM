@@ -2,9 +2,9 @@ Package: SEM
 Title: Simple Ecosystem Model
 Version: 0.0.0.9000
 Authors@R: 
-    person("Kalyn", "Dorheim", , "kalyn.dorheim@pnnl.com", role = c("trl", "cre"),
+    person("Kalyn", "Dorheim", , "kalyn.dorheim@pnnl.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8093-8397"))
-Description: What the package does (one paragraph).
+Description: This is an R package implementation of the SEM created by Dietze and Matthes
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -14,6 +14,9 @@ Depends:
   ncdf4 (>= 1.19), 
   stats (>= 4.1.2)
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://kdorheim.github.io/SEM/
+VignetteBuilder: knitr
