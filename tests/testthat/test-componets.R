@@ -1,3 +1,8 @@
+# Compare package functions with some of the results returned by the Dietz and Matthes implementation https://github.com/mdietze/PestED
+#  The purse of this test it to catch potenital errors that may have occured during the translation process. This test 
+# will most likley be deleted after the V1 release.
+
+
 test_that("arrhenius works", {
   out <- arrhenius(1:10, 1:10)
   expect_true(length(out) == length(1:10))

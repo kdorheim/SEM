@@ -221,7 +221,8 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 #' \item{leaf}{defoliators}
 #' \item{root}{root rot}
 #' \item{stem}{stem rot}
-#' @parm pest.time NULL or vector of the times to apply the pest disturbance to 
+#' }
+#' @param pest.time NULL or vector of the times to apply the pest disturbance to 
 #' @param inputs named numeric vector containing the meteorological variables at a single time point
 #' \describe{
 #' \item{temp}{Air temperature, degrees C}
@@ -249,6 +250,14 @@ run_SEM <- function(pest, pest.time, inputs, X, params){
   assert_that(check_contents(req = c("PAR", "temp", "VPD", "precip", "time"), check = names(inputs)))
   assert_that(any(all(pest.time %in% inputs$time) || is.null(pest.time)))
   assert_that(unique(diff(inputs$time)) == 30, msg = "30 min time steps required")
+  
+  req_params <- c("gevap", "Wthresh", "Kroot", "SLA", "alpha", "Vcmax", "Jmax", "m", "g0", "allomB0",
+                  "allomB1", "allomL0", "allomL1", "Rleaf", "Rroot", "Rstem", "Rg", "Q10", "Rbasal", "leafLitter",
+                  "CWD", "rootLitter", "mort1", "mort2", "NSCthreshold", "Lmin", "q", "StoreMinDay", "Smax", "Rfrac",
+                  "SeedlingMort", "Kleaf", "Km")  
+  assert_that(check_contents(req = req_params, check = names(params)))
+  
+  DBH <- 10 
   
   # Save a copy of the pest vector
   pest.orig <- pest

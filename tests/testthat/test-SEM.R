@@ -48,6 +48,7 @@ test_that("SEM works", {
   X[2] <- params$allomB0 * DBH ^ params$allomB1
   X[5] <- 10
   X[7] <- 700
+
   
   names(X) <- c("leaf", "wood", "root", "storage", "som", "soil_water",
                 "stem_density")
