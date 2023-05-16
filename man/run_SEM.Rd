@@ -4,7 +4,7 @@
 \alias{run_SEM}
 \title{SEM model}
 \usage{
-run_SEM(pest, pest.time, inputs, X, params)
+run_SEM(pest, pest.time, inputs, X, param_df)
 }
 \arguments{
 \item{pest}{named vector for the pest impacts
@@ -38,7 +38,11 @@ run_SEM(pest, pest.time, inputs, X, params)
 \item{stem_density}{stems/ha}
 }}
 
-\item{params}{named vector TBD}
+\item{param_df}{dataframe containing the following
+\describe{
+\item{parameter}{character of the parameter name}
+\item{value}{double parameter values}
+}}
 }
 \value{
 vector of results

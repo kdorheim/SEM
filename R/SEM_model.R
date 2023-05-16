@@ -241,21 +241,34 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 #' \item{soil_water}{m}
 #' \item{stem_density}{stems/ha}
 #' }
-#' @param params named vector TBD
+#' @param param_df dataframe containing the following
+#' \describe{
+#' \item{parameter}{character of the parameter name}
+#' \item{value}{double parameter values}
+#' }
 #' @return vector of results
-run_SEM <- function(pest, pest.time, inputs, X, params){
+run_SEM <- function(pest, pest.time, inputs, X, param_df){
   
-  # Check the inputs
+  
+  # Check the function arguments
   assert_that(check_contents(req = c("phloem", "xylem", "leaf", "root", "stem"), check = names(pest)))
   assert_that(check_contents(req = c("PAR", "temp", "VPD", "precip", "time"), check = names(inputs)))
   assert_that(any(all(pest.time %in% inputs$time) || is.null(pest.time)))
-  assert_that(unique(diff(inputs$time)) == 30, msg = "30 min time steps required")
+  assert_that(unique(diff(inputs$time)) == 30, msg = "30 min time steps required") # TODO may change if met inputs are a different resolution
+  assert_that(is.data.frame(param_df))
+  assert_that(check_contents(req = c("value", "parameter"), check = names(param_df)))
   
+  
+  # TODO not all of these might be required 
   req_params <- c("gevap", "Wthresh", "Kroot", "SLA", "alpha", "Vcmax", "Jmax", "m", "g0", "allomB0",
                   "allomB1", "allomL0", "allomL1", "Rleaf", "Rroot", "Rstem", "Rg", "Q10", "Rbasal", "leafLitter",
                   "CWD", "rootLitter", "mort1", "mort2", "NSCthreshold", "Lmin", "q", "StoreMinDay", "Smax", "Rfrac",
                   "SeedlingMort", "Kleaf", "Km")  
-  assert_that(check_contents(req = req_params, check = names(params)))
+  assert_that(check_contents(req = req_params, check = param_df$parameter))
+  
+  # Extract the parameter values into a vector 
+  params <- param_df$value
+  names(params) <- param_df$parameter
   
   DBH <- 10 
   
@@ -286,7 +299,7 @@ run_SEM <- function(pest, pest.time, inputs, X, params){
   }
   
   # Format output
-  colnames(output) <- c("Bleaf","Bwood","Broot","Bstore","BSOM","Water","density","GPP","fopen","Rleaf","RstemRroot","Rgrow")
+  colnames(output) <- c("Bleaf", "Bwood", "Broot", "Bstore", "BSOM", "Water", "density", "GPP", "fopen", "Rleaf", "RstemRroot", "Rgrow")
   output <- cbind(time = inputs$time, data.frame(output))
   return(output)
 

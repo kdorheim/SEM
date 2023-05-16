@@ -52,13 +52,18 @@ test_that("output data has not changed", {
   X[5] <- 10
   X[7] <- 700
   
+  p_df <- data.frame(parameter = names(params))
+  names(params) <- NULL
+  p_df$value <- params
+  
+  
   names(X) <- c("leaf", "wood", "root", "storage", "som", "soil_water",
                 "stem_density")
   pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
   
   xx <- read.csv("inputs.csv")
   xx$time <- as.POSIXct(xx$time)
-  SEMout <- run_SEM(pest = pest0, pest.time = NULL, inputs = xx, X = X, params = params)
+  SEMout <- run_SEM(pest = pest0, pest.time = NULL, inputs = xx, X = X, param_df = p_df)
   
   
   comp_data <- read.csv("comp_data.csv")
