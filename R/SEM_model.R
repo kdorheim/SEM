@@ -292,9 +292,9 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df){
     names(X) <-  c("leaf", "wood", "root", "storage", "som", "soil_water", "stem_density")
     
     # Check time
-    nice_date <- as.POSIXct(t, origin = inputs$time[[1]])
-    hms <- format(nice_date, format = "%H:%M:%S")
-    if(hms ==  "00:00:00"){print(nice_date)}
+    date <- format(inputs$time[index], format = "%d")
+    hms <- format(inputs$time[index], format = "%H:%M:%S")
+    if(date == "01" & hms == "00:00:00"){print(inputs$time[index])}
     
   }
   
