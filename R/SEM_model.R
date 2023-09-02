@@ -77,20 +77,40 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   PARmid = (1 - 0.5 * exp(-0.5 * LAI)) * inputs[["PAR"]]
   
   # Photosynthesis & Transpiration
+  # Leaf-level photosynthesis was modelled using a standard enzyme-kinetic 
+  # approach (Farquhar et al. 1980) coupled to the Medlyn variant of the 
+  # Ball–Berry stomatal conductance model (Medlyn et al. 2011) and scaled to
+  # gross primary productivity (GPP) based on leaf area index (LAI).
   Ags = c(0, 0)
   if(inputs[["PAR"]] > 1e-20){
     
     Vcmax_adj <- arrhenius(params$Vcmax, inputs[["temp"]])
     Jmax_adj <- arrhenius(params$Jmax, inputs[["temp"]])
+    
+    # CO2 compensation point, temperature dependent assumed to be same for all C3 species see Medlyn et al. 2011
     gamma_star <- 42.75 * exp(37830 * (convert_temp_C_K(inputs[["temp"]]) - 298)/(298 * R * convert_temp_C_K(inputs[["temp"]])))
     
-    Ags <- solve.FVcB(Vcmax = Vcmax_adj, Jmax = Jmax_adj, Rleaf = Rleaf, Gstar = gamma_star, 
-                      alpha = params$alpha, m = params$m, g0 = params$g0, VPD = inputs$VPD,
-                      PAR = PARmid, Km = params$Km, Ca = 400, inital_guess = c(15, 0.1))
+    # Solve for plot level photosynthesis & transpiration. This approach accounts for 
+    # temperature, CO2, and light availability. Note that C update to water loss 
+    # is optimized. 
+    Ags <- solve.FVcB(Vcmax = Vcmax_adj, 
+                      Jmax = Jmax_adj, 
+                      Rleaf = Rleaf, 
+                      Gstar = gamma_star, 
+                      alpha = params$alpha,
+                      m = params$m, 
+                      g0 = params$g0, 
+                      VPD = inputs$VPD,
+                      PAR = PARmid,
+                      Km = params$Km, 
+                      Ca = 400, 
+                      inital_guess = c(15, 0.1))
     
     # transpiration without water limitation, umol/m2/s
     demand = max(Ags[2] * 0.622 * inputs[["VPD"]] / P * LAI * 1e6, 1e-10) 
     # fraction of potential water demand that can be supplied under normal conditions
+    # If insufficient water is available for transpiration then there will be no 
+    # photosynthesis, GPP = 0. 
     fopen = max(0, min(1, supply/demand))
     GPP = (Ags[1] + Rleaf) * fopen * LAI               # umol/m2/sec
     TRANSP = demand * fopen                            # umol/m2/sec
