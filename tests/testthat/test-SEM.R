@@ -86,12 +86,14 @@ test_that("SEM works", {
                      9.999959e+00, 9.999992e-01, 6.999997e+02, 0.000000e+00, 
                      1.000000e+00, 0.000000e+00, 1.370695e+00, 4.496680e+00)
   expect_equal(out3, expected_out3, tolerance = test_tol)
+  
   pest4 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
   out4 <- SEM(X = X, params = params, inputs = inputs, pest = pest4)
-  expected_out4 <- c(2.5793242, 26.9562645, 2.5793242, 2.5793242, 10.0000112,
-                     0.9999991, 699.9997413, 35.1959409, 1.0000000, 5.7292199, 
-                     1.3706403, 6.9713243)
+  expected_out4 <- c(2.579276e+00, 2.695606e+01, 4.718030e-04, 2.579324e+00,
+                     9.999959e+00, 9.999991e-01, 6.999997e+02, 3.519594e+01,
+                     1.000000e+00, 5.729220e+00, 4.158068e-01, 7.208238e+00)
   expect_equal(out4, expected_out4, tolerance = test_tol)
+  
   pest5 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 1)
   out5 <- SEM(X = X, params = params, inputs = inputs, pest = pest5)
   expected_out5 <- c(2.5793242, 26.9563823, 2.5793242, 2.5793242, 

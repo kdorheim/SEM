@@ -64,8 +64,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   # update the biomass pools appropriately. 
   # Calculate the litter pools the leaf and root litter are adjusted by the "pest" treatment.
   leafLitter  <- X[["leaf"]] * min(1, params$leafLitter + pest[["leaf"]]) # At most all the leafs can drop
-  #rootLitter  <- X[["root"]] * min(1, params$rootLitter + pest[["root"]]) # At most all of the roots rot
-  rootLitter <- X[["root"]] * pest[["root"]] * params$rootLitter # pest root is hard coded to equal the value of 1
+  rootLitter  <- X[["root"]] * min(1, params$rootLitter + pest[["root"]]) # pest root is hard coded to equal the value of 1
   CWD         <- X[["wood"]] * params$CWD 
   X[["leaf"]] <- X[["leaf"]] - leafLitter
   X[["wood"]] <- X[["wood"]] - CWD
@@ -319,7 +318,7 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df){
     if(t %in% pest.time){
       pest <- pest.orig
     } else {
-      pest <- c("phloem" = 0,  "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
+      pest <- c("phloem" = 0,  "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
     }
  
     # Index over the different meteorology
