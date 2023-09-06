@@ -57,11 +57,16 @@ ballberry <- function(input, BBparams, Fparams, obs) {
   
   ## is actually the Medlyn et al 2011 model
   Ci <- obs[["Ca"]] - 1.6 * input[1] / input[2] # intercellular  CO2 concentration is
-  # What is the difference between the farquhar expected photosynthsis and the optmized 
-  # photosynthsis? 
+  
+  # error between expected farquhar photosynthesis and estimated one from the 
+  # optim routine
   e1 <- (farquhar(Ci = Ci, Fparams = Fparams, I = obs[["PAR"]]) - input[1])
+  # Error between ‘Ball-Berry’ model for predicting stomatal conductance and water use efficiency 
+  # with the estimated one from the optim routine 
   e2 <- (BBparams[["g0"]] + BBparams[["m"]] * input[1] / ((obs[["Ca"]] - Fparams[["Gstar"]]) *
                                                           (1 + obs[["VPD"]])) - input[2]) * 100  
+  
+  # error value that will be minimized 
   out <- e1^2 + e2^2
   names(out) <- NULL
   
