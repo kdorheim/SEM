@@ -31,43 +31,48 @@
 #' @noRd
 SEM <- function(X, params, inputs, pest, timestep = 1800) {
  
-  
+  # Constants
   rho <- 1.15           # density of air, kg/m3 
   P <- 101.325          # average atm pressure (kPa)
   R <- 8.3144621        # ideal gas constant in J/K/mol
-  kH2O <- 1e-6*18*10^-6 #mol/umol*gH2O/mol*m/g
-  ## convert umol/m2/sec -> Mg/ha/sec
-  k <- 1e-6*12*1e-6*10000 #mol/umol*gC/mol*Mg/g*m2/ha
-  ktree <- 1e-6*12*1e-3   #mol/umol*gC/mol*kg/g -> kg/m2/sec
+
+  # Conversion Factors
+  k <- 1e-6*12*1e-6*10000 #(mol/umol)*(gC/mol)*(Mg/g)*(m2/ha) ->  Mg/ha/sec
+  ktree <- 1e-6*12*1e-3   #(mol/umol)*(gC/mol)*(kg/g) -> kg/m2/sec
+  kH2O <- 1e-6*18*10^-6   #(mol/umol)*(gH2O/mol)*(m/g) -> m h2o
   
-  # Hydrology  -----------
-  conversion_factor <- (1/1000) # kg/m2/s to m/s
-  EVAP = min(X[["soil_water"]]/timestep, rho * params$gevap * (0.622 * inputs[["VPD"]] / P) * conversion_factor)  
-  X[["soil_water"]] <- X[["soil_water"]] + (inputs[["precip"]] * conversion_factor) - (EVAP * timestep)
+  # Patch Hydrology  -----------
+  conversion_factor <- (1/1000) # kg/m2 to m
+  EVAP = min(X[["soil_water"]]/timestep, rho * params$gevap * (0.622 * inputs[["VPD"]] / P) * conversion_factor)  # m/s
+  X[["soil_water"]] <- X[["soil_water"]] + (inputs[["precip"]] * conversion_factor) - (EVAP * timestep) # m
   
-  # Plant available water (trapazoidal response) (patch)
-  # Wthresh is the in plant available moisture trapezoidal response (m3/m2) 
+  # The total amount of plant available water use.
   if(X[["soil_water"]] > params$Wthresh){
+    # Plant available moisture trapezoidal response (m3/m2) 
     paw <- X[["soil_water"]] - 0.5 * params$Wthresh
   } else {
+    # Otherwise plant available moisture is half of the linear relationship. 
     paw <- 0.5 * X[["soil_water"]] * X[["soil_water"]] / params$Wthresh
   }
 
-  # Determine the potential rate of water uptake, umol/m2Ground/s
-  supply <- (1 - pest[["xylem"]]) * params$Kroot * X[["root"]] * paw * X[["stem_density"]] 
+  # Determine the potential rate of water uptake based on the availability 
+  # and also on the amount of tree available, umol/m2Ground/s
+  supply <- (1 - pest[["xylem"]]) * X[["root"]] * params$Kroot * paw * X[["stem_density"]] 
   
-  # Biomass  --------- 
+  # Update biomass based on turnover  --------- 
   # Use leaf/stem/root turnover rate to calculate the litter pools, then 
   # update the biomass pools appropriately. 
-  leafLitter <- X[["leaf"]] * min(1, params$leafLitter + pest[["leaf"]])
-  CWD        <- X[["wood"]] * params$CWD
-  rootLitter <- X[["root"]] * pest[["root"]] * params$rootLitter # pest root is hard coded to equal the value of 1 
+  # Calculate the litter pools the leaf and root litter are adjusted by the "pest" treatment.
+  leafLitter  <- X[["leaf"]] * min(1, params$leafLitter + pest[["leaf"]]) # At most all the leafs can drop
+  #rootLitter  <- X[["root"]] * min(1, params$rootLitter + pest[["root"]]) # At most all of the roots rot
+  rootLitter <- X[["root"]] * pest[["root"]] * params$rootLitter # pest root is hard coded to equal the value of 1
+  CWD         <- X[["wood"]] * params$CWD 
   X[["leaf"]] <- X[["leaf"]] - leafLitter
   X[["wood"]] <- X[["wood"]] - CWD
   X[["root"]] <- X[["root"]] - rootLitter
   
   # Respiration & Photosynthesis ------------
-  ## Leaf Respiration (m2 leaf)
+  # Adjust the base leaf respiration to the environmental conditions. 
   Rleaf = arrhenius(params$Rleaf, inputs[["temp"]]) 
   
   ## LAI & Canopy Optics (patch) 
@@ -76,12 +81,11 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   # Estimate the mid-canopy PAR (umol/m2/sec)
   PARmid = (1 - 0.5 * exp(-0.5 * LAI)) * inputs[["PAR"]]
   
-  # Photosynthesis & Transpiration
-  # Leaf-level photosynthesis was modelled using a standard enzyme-kinetic 
+  # Leaf-level photosynthesis was modeled using a standard enzyme-kinetic 
   # approach (Farquhar et al. 1980) coupled to the Medlyn variant of the 
   # Ball–Berry stomatal conductance model (Medlyn et al. 2011) and scaled to
   # gross primary productivity (GPP) based on leaf area index (LAI).
-  Ags = c(0, 0)
+  Ags = c(0, 0) # Arg[1] = Photosynthesis, Arg[2] = water use
   if(inputs[["PAR"]] > 1e-20){
     
     Vcmax_adj <- arrhenius(params$Vcmax, inputs[["temp"]])
@@ -114,9 +118,12 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
     fopen = max(0, min(1, supply/demand))
     GPP = (Ags[1] + Rleaf) * fopen * LAI               # umol/m2/sec
     TRANSP = demand * fopen                            # umol/m2/sec
+    
+    # Update soil water by transpiration 
     X[["soil_water"]] = X[["soil_water"]] - TRANSP * timestep * kH2O
     
   } else {
+    # If there is no light then there is no photosynthesis, GPP, or transpiration.
     fopen <- GPP <- TRANSP <- 0
   }
   
@@ -132,11 +139,17 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   #  7 - stem growth
   # Update biomass/allocation of carbon with respiration numbers --------
   ## maintenance respiration (priority #2) (umol/s/tree)
-  GPP = GPP * 10000 / X[["stem_density"]]
+  # Scale from leaf level GPP and respiration 
+  GPP = GPP * 10000 / X[["stem_density"]] # Scale from leaf level GPP to plot 
   Rleaf = Rleaf * LAI * 10000 / X[["stem_density"]]
+  
+  # Adjust basal stem and root respiration to account for the temperature. 
   Rstem = X[["wood"]] * arrhenius(params$Rstem, inputs[["temp"]])
   Rroot = X[["root"]] * arrhenius(params$Rroot, inputs[["temp"]])
-  Rg = 0  ## growth respiration: kg per plant per timestep
+  
+  # Growth respiration (kg per plant per timestep) assumed to be 0  
+  # until carbon priorities 1-6 are met. 
+  Rg = 0 
   
   # Update storage for priorities 1 & 2: --------
   X[["storage"]] = X[["storage"]] + ((1 - pest[["phloem"]]) * (GPP - Rleaf) - Rstem - Rroot) * ktree * timestep
@@ -145,7 +158,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   DBH = (X[["wood"]] / params$allomB0)^(1 / params$allomB1)  ## infer DBH from woody biomass
   Lmax = params$allomL0 * DBH^params$allomL1        ## set maximum leaf biomass from DBH
   Lmin = params$Lmin * Lmax                         ## set minimum leaf and root biomass as a fraction of maximum
-  Rmin = Lmin * params$q
+  Rmin = Lmin * params$q                            ## Leaf:root biomass ratio
   Smin = (Rleaf * LAI * 10000 / X[["stem_density"]] + Rstem + Rroot) * ktree * 86400 * params$StoreMinDay  ## set minimum storage based on the number of days the plant could survive
   Smax = params$Smax * Lmax                         ## Set maximum storage biomass as a multiplier to maximum leaf biomass (similar to Fisher et al 2010)
 
@@ -280,8 +293,8 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df){
   
   
   # TODO not all of these might be required 
-  req_params <- c("gevap", "Wthresh", "Kroot", "SLA", "alpha", "Vcmax", "Jmax", "m", "g0", "allomB0",
-                  "allomB1", "allomL0", "allomL1", "Rleaf", "Rroot", "Rstem", "Rg", "Q10", "Rbasal", "leafLitter",
+  req_params <- c("gevap", "Wthresh", "Kroot", "SLA", "alpha", "Vcmax", "m", "g0", "allomB0",
+                  "allomB1", "allomL0", "allomL1", "Rroot", "Rstem", "Rg", "Q10", "Rbasal", "leafLitter",
                   "CWD", "rootLitter", "mort1", "mort2", "NSCthreshold", "Lmin", "q", "StoreMinDay", "Smax", "Rfrac",
                   "SeedlingMort", "Kleaf", "Km")  
   assert_that(check_contents(req = req_params, check = param_df$parameter))
@@ -289,6 +302,10 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df){
   # Extract the parameter values into a vector 
   params <- param_df$value
   names(params) <- param_df$parameter
+  
+  # Add to certain values to the params list, these are values that are based on SEM asssumptions. 
+  params[["Rleaf"]] <- 0.04 * params$Vcmax #Basal leaf respiration (umol/m2/s) is a fraction of the maximum carboxylation rate
+  # TODO need to add Jmax ? 
   
   DBH <- 10 
   
