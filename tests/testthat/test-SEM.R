@@ -2,15 +2,9 @@ timestep <- 1800
 test_tol <- 1e-6
 ### paramters
 params <- list()
-## hydrology
 params$gevap <- 0.005  
 params$Wthresh <- 1
 params$Kroot <- 0.2 
-R <- 8.3144621
-Tleaf <- 298
-Kc <- 404.9 * exp(79430 * (Tleaf - 298) / (298 * R * Tleaf))
-Ko <- 278.4 * exp(36380 * (Tleaf - 298) / (298 * R * Tleaf))
-Km <- Kc * (1 + 210 / Ko)
 params$SLA <- 10
 params$alpha <- 0.8
 params$Vcmax <- 18
@@ -40,10 +34,6 @@ params$Smax <- 1
 params$Rfrac <- 0.2
 params$SeedlingMort <- 0.99
 params$Kleaf <- (1 / 21 / 48) / 2 ^ 2.5  
-params$Km <- Kc * (1 + 210 / Ko)
-
-DBH <- 10
-
 
 test_that("SEM works", {
 
@@ -104,7 +94,8 @@ test_that("SEM works", {
 })
 
 test_that("run SEM", {
-
+  
+  DBH <- 10
   X <- rep(1, 7)
   X[1] <- X[3] <- X[4] <- params$allomL0 * DBH ^ params$allomL1
   X[2] <- params$allomB0 * DBH ^ params$allomB1

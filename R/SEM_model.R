@@ -41,6 +41,11 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   ktree <- 1e-6*12*1e-3   #(mol/umol)*(gC/mol)*(kg/g) -> kg/m2/sec
   kH2O <- 1e-6*18*10^-6   #(mol/umol)*(gH2O/mol)*(m/g) -> m h2o
   
+  Tleaf <- 298
+  Kc <- 404.9 * exp(79430 * (Tleaf - 298) / (298 * R * Tleaf))
+  Ko <- 278.4 * exp(36380 * (Tleaf - 298) / (298 * R * Tleaf))
+  Km <- Kc * (1 + 210 / Ko)
+  
   # Patch Hydrology  -----------
   conversion_factor <- (1/1000) # kg/m2 to m
   EVAP = min(X[["soil_water"]]/timestep, rho * params$gevap * (0.622 * inputs[["VPD"]] / P) * conversion_factor)  # m/s
@@ -105,7 +110,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
                       g0 = params$g0, 
                       VPD = inputs$VPD,
                       PAR = PARmid,
-                      Km = params$Km, 
+                      Km = Km, 
                       Ca = 400, 
                       inital_guess = c(15, 0.1))
     
@@ -278,8 +283,10 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 #' \item{parameter}{character of the parameter name}
 #' \item{value}{double parameter values}
 #' }
+#' @param DBH diameter at breast height default value set to 10
+#' @param quiet boolean default set to TRUE if set to FALSE will print date
 #' @return vector of results
-run_SEM <- function(pest, pest.time, inputs, X, param_df){
+run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE){
   
   
   # Check the function arguments
@@ -295,19 +302,17 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df){
   req_params <- c("gevap", "Wthresh", "Kroot", "SLA", "alpha", "Vcmax", "m", "g0", "allomB0",
                   "allomB1", "allomL0", "allomL1", "Rroot", "Rstem", "Rg", "Q10", "Rbasal", "leafLitter",
                   "CWD", "rootLitter", "mort1", "mort2", "NSCthreshold", "Lmin", "q", "StoreMinDay", "Smax", "Rfrac",
-                  "SeedlingMort", "Kleaf", "Km")  
+                  "SeedlingMort", "Kleaf")  
   assert_that(check_contents(req = req_params, check = param_df$parameter))
   
   # Extract the parameter values into a vector 
   params <- param_df$value
   names(params) <- param_df$parameter
   
-  # Add to certain values to the params list, these are values that are based on SEM asssumptions. 
+  # Add to certain values to the params list, these are values that are based on SEM assumptions. 
   params[["Rleaf"]] <- 0.04 * params$Vcmax #Basal leaf respiration (umol/m2/s) is a fraction of the maximum carboxylation rate
   # TODO need to add Jmax ? 
-  
-  DBH <- 10 
-  
+
   # Save a copy of the pest vector
   pest.orig <- pest
   
@@ -330,7 +335,7 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df){
     # Check time
     date <- format(inputs$time[index], format = "%d")
     hms <- format(inputs$time[index], format = "%H:%M:%S")
-    if(date == "01" & hms == "00:00:00"){print(inputs$time[index])}
+    if (!quiet) if(date == "01" & hms == "00:00:00"){print(inputs$time[index])}
     
   }
   

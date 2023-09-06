@@ -12,7 +12,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-Depends: 
+Imports: 
   assertthat (>= 0.2.1), 
   ncdf4 (>= 1.19), 
   stats (>= 4.1.2)
