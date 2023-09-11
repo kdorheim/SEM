@@ -1,5 +1,6 @@
 timestep <- 1800
 test_tol <- 1e-6
+
 ### paramters
 params <- list()
 params$gevap <- 0.005  
@@ -35,18 +36,25 @@ params$Rfrac <- 0.2
 params$SeedlingMort <- 0.99
 params$Kleaf <- (1 / 21 / 48) / 2 ^ 2.5  
 
-test_that("SEM works", {
+DBH <- 10
 
-  DBH <- 10
-  X <- rep(1, 7)
-  X[1] <- X[3] <- X[4] <- params$allomL0 * DBH ^ params$allomL1
-  X[2] <- params$allomB0 * DBH ^ params$allomB1
-  X[5] <- 10
-  X[7] <- 700
+PAR <- c(23.5, 51.4, 85.0, 110.8, 148.9, 213.1)
+temp <- c(-5.1, -5.2, -5.1, -5.1, -5.1, -5.0)
+VPD <- c(0.009, 0.010, 0.009, 0.010, 0.010, 0.009)
+precip <- rep(0, 6)
+time <- seq(as.POSIXct("2009-01-01 00:00"), as.POSIXct("2014-12-31 23:30"),by = 1800)[1:6]
 
-  
-  names(X) <- c("leaf", "wood", "root", "storage", "som", "soil_water",
-                "stem_density")
+
+X <- rep(1, 7)
+X[1] <- X[3] <- X[4] <- params$allomL0 * DBH ^ params$allomL1
+X[2] <- params$allomB0 * DBH ^ params$allomB1
+X[5] <- 10
+X[7] <- 700
+names(X) <- c("leaf", "wood", "root", "storage", "som", "soil_water",
+              "stem_density")
+
+test_that("SEM", {
+
   inputs <- data.frame(PAR = 187.2, temp = -6.2, VPD = 0.013, precip = 0)
   
   # Try out the different pest configurations!
@@ -56,6 +64,7 @@ test_that("SEM works", {
                      0.9999991, 699.9997472, 35.1959409, 1.0000000, 5.7292199, 
                      1.3706948, 6.9713107)
   expect_equal(out0, expected_out0, tolerance = test_tol)
+  
   pest1 <- c("phloem" = 1, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
   out1 <- SEM(X = X, params = params, inputs = inputs, pest = pest1)
   expected_out1 <- c(2.5792757, 26.9560561, 2.5793242, 2.5792946, 9.9999597,
@@ -93,23 +102,7 @@ test_that("SEM works", {
   
 })
 
-test_that("run SEM", {
-  
-  DBH <- 10
-  X <- rep(1, 7)
-  X[1] <- X[3] <- X[4] <- params$allomL0 * DBH ^ params$allomL1
-  X[2] <- params$allomB0 * DBH ^ params$allomB1
-  X[5] <- 10
-  X[7] <- 700
-  
-  names(X) <- c("leaf", "wood", "root", "storage", "som", "soil_water",
-                "stem_density")
-  
-  PAR <- c(23.5, 51.4, 85.0, 110.8, 148.9, 213.1)
-  temp <- c(-5.1, -5.2, -5.1, -5.1, -5.1, -5.0)
-  VPD <- c(0.009, 0.010, 0.009, 0.010, 0.010, 0.009)
-  precip <- rep(0, 6)
-  time <- seq(as.POSIXct("2009-01-01 00:00"), as.POSIXct("2014-12-31 23:30"),by = 1800)[1:6]
+test_that("run_SEM control run", {  
   
   inputs <- data.frame("PAR" = PAR, 
                        "temp" = temp, 
@@ -117,17 +110,12 @@ test_that("run SEM", {
                        "precip" = precip, 
                        "time" = time)
   
-  pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
-  out0 <- SEM(X = X, params = params, inputs = inputs[1,], pest = pest0)
-  
-  
-  
   p_df <- data.frame(parameter = names(params))
   names(params) <- NULL
   p_df$value <- params
-  
-  
+  pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
   SEMout <- run_SEM(pest = pest0, pest.time = NULL, inputs = inputs, X = X, param_df = p_df)
+  
   leaf <- c(2.579324, 2.579339, 2.579352, 2.579366, 2.579381, 2.579395)
   wood <- c(26.95628, 26.95647, 26.95669, 26.95692, 26.95714, 26.95733)
   root <- c(2.579324, 2.579339, 2.579352, 2.579366, 2.579381, 2.579395)
@@ -152,5 +140,68 @@ test_that("run SEM", {
   expect_equal(SEMout$RstemRroot, steemroot, tolerance = test_tol)
   expect_equal(SEMout$Rgrow, grow, tolerance = test_tol)
   
-
 })
+
+
+test_that("run_SEM disturbance", {
+  
+  
+  inputs <- data.frame("PAR" = PAR, 
+                       "temp" = temp, 
+                       "VPD" = VPD, 
+                       "precip" = precip, 
+                       "time" = time)
+  
+  p_df <- data.frame(parameter = names(params))
+  names(params) <- NULL
+  p_df$value <- params
+  pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
+  SEMout0 <- run_SEM(pest = pest0, pest.time = NULL, inputs = inputs, X = X, param_df = p_df)
+  
+  # Make sure that errors are thrown as expected
+  expect_error(run_SEM(pest = pest0, pest.time = 1, inputs = inputs, X = X, param_df = p_df), 
+               label = "Error: pest.time must be an element of inputs$time")
+  pest <- pest0
+  pest[1] <- 1
+  pest_time <- inputs$time[2]
+  expect_error(run_SEM(pest = pest, pest.time = NULL, inputs = inputs, X = X, param_df = p_df), 
+               label  = "Error: if pest.time is NULL all elements of pest must be set to 0")
+  
+  expect_error(run_SEM(pest = pest0, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df), 
+               label  = "Error: if pest.time is NULL all elements of pest must be set to 0 did not throw the expected error.")
+  
+  
+  # Make sure that the disturbances affect the expected SEM output 
+  pest_time <- inputs$time[2]
+
+  pest_phloem1 <- c("phloem" = 1, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
+  SEMout_phloem1 <- run_SEM(pest = pest_phloem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  expect_gt(object =  mean(abs(SEMout0$Rgrow - SEMout_phloem1$Rgrow)), expected = 0)
+  
+  pest_xylem1 <- c("phloem" = 0, "xylem" = 1, "leaf" = 0, "root" = 0, "stem" = 0)
+  SEMout_xylem1  <- run_SEM(pest = pest_xylem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  expect_gt(object =  mean(abs(SEMout0$GPP - SEMout_xylem1$GPP)), expected = 0)
+
+  pest_leaf1 <- c("phloem" = 0, "xylem" = 0, "leaf" = 1, "root" = 0, "stem" = 0)
+  SEMout_leaf1 <- run_SEM(pest = pest_leaf1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  expect_gt(object =  mean(abs(SEMout0$Bleaf - SEMout_leaf1$Bleaf)), expected = 0)
+  
+  
+  # TODO KD is unsure about her implementation of the root and and stem pests, these tests 
+  # right now make sure that everything the treatment can in theory be run without throwing errors. 
+  pest_root1 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
+  SEMout_root1 <- run_SEM(pest = pest_root1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+
+  pest_stem1 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 1)
+  SEMout_stem1 <- run_SEM(pest = pest_stem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+
+    
+  # Test to see if multiple time step disturbance works... 
+  pest_time <- inputs$time[2:5]
+  pest_xylem_p5 <- c("phloem" = 0, "xylem" = 0.5, "leaf" = 0, "root" = 0, "stem" = 0)
+  SEMout_xylem_p5 <- run_SEM(pest = pest_xylem_p5, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  expect_gt(object = mean(abs(SEMout_xylem1$GPP - SEMout_xylem_p5$GPP)), expected = 0)
+  
+  })
+
+

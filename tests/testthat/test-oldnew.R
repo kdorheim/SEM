@@ -59,7 +59,7 @@ test_that("output data has not changed", {
   
   names(X) <- c("leaf", "wood", "root", "storage", "som", "soil_water",
                 "stem_density")
-  pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
+  pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
   
   xx <- read.csv("inputs.csv")
   xx$time <- as.POSIXct(xx$time)
