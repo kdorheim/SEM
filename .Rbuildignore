@@ -7,3 +7,4 @@
 ^\.github$
 ^data-raw$
 ^vignettes/articles$
+^README\.Rmd$

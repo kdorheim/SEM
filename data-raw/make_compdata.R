@@ -1,11 +1,12 @@
-# Generate the data to use in the old-new test to ensure consistent behavior with 
-# future development. 
+# Generate some data to use in the old-new testing to ensure consistent behavior with 
+# during development. 
+# TODO unclear if this makes it into the package release
 devtools::load_all()
 
 timestep <- 1800
 test_tol <- 1e-6
 
-### paramters
+### parameters
 params <- list()
 ## hydrology
 params$gevap <- 0.005  
@@ -54,9 +55,12 @@ X[5] <- 10
 X[7] <- 700
 
 names(X) <- c("leaf", "wood", "root", "storage", "som", "soil_water", "stem_density")
-met_input_df <- read.csv("tests/testthat/inputs.csv")
-met_input_df[["time"]] <-  seq(as.POSIXct("2009-01-01 00:00"), as.POSIXct("2009-12-31 23:30"), by = 1800)[1:nrow(met_input_df)]
-pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
+met_input_df <- read.csv("./inst/metdata/example_inputs.csv")
+met_input_df[["time"]] <- seq(as.POSIXct("2005-01-01 00:00"), as.POSIXct("2005-12-31 23:30"), by = 1800)
+met_input_df <- met_input_df[1:100, ]
+write.csv(met_input_df, file = "tests/testthat/inputs.csv", row.names = FALSE)
+
+pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
 
 p_df <- data.frame(parameter = names(params))
 names(params) <- NULL

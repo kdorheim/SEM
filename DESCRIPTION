@@ -4,10 +4,9 @@ Version: 0.1.0
 Authors@R: 
     person("Kalyn", "Dorheim", , "kalyn.dorheim@pnnl.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8093-8397"))
-Description: This is an R package implementation of the SEM created by Dietze and Matthes. See Dietze, Michael C., and  
-  Jaclyn Hatala Matthes. 2014. “A General Ecophysiological Framework for Modelling the Impact of Pests and Pathogens on 
-  Forest Ecosystems.” Ecology Letters 17 (11): 1418–26 for the documenation manuscript and https://github.com/mdietze/PestED 
-  for the original model implementation.
+Description: This is an R package implementation of the SEM created by Dietze and Matthes. See Dietze, Michael C., and 
+    Jaclyn Hatala Matthes. 2014. A General Ecophysiological Framework for Modelling the Impact of Pests and Pathogens on Forest Ecosystems. Ecology Letters 17 (11): 1418–26 for the documenation manuscript and https://github.com/mdietze/PestED 
+    for the original model implementation.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

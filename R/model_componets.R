@@ -35,14 +35,14 @@ arrhenius <- function(observed.value, new.temp, old.temp = 25) {
 #' @param Fparams vector of the \link{farquhar} parameters
 #' \describe{
 #'  \item{alpha}{Quantum yield}
-#'  \item{Jmax}{TBD}
-#'  \item{Gstar}{ CO2 compensation point, temperature dependent assumed to be same for all C3 species see Medlyn et al. 2011}
+#'  \item{Jmax}{TODO}
+#'  \item{Gstar}{CO2 compensation point, temperature dependent assumed to be same for all C3 species see Medlyn et al. 2011}
 #'  \item{Vcmax}{Maximum carboxylation rate (umol/m2/s)}
 #'  \item{Rleaf}{Basal leaf respiration (umol/m2/s)}
 #'  }
 #' @param obs vector of observations at one time step
 #' \describe{
-#'  \item{Ca}{Atmospheric CO2 concentrations}
+#'  \item{Ca}{Atmospheric CO2 concentrations fixed at a value of 400}
 #'  \item{VPD}{Vapor pressure deficit, (kPa)}
 #'  \item{PAR}{Incoming photosynthetically active radiation, (umol/m2/s)}
 #'  }
@@ -90,7 +90,7 @@ ballberry <- function(input, BBparams, Fparams, obs) {
 #'  \item{Gstar}{ CO2 compensation point, temperature dependent assumed to be same for all C3 species see Medlyn et al. 2011}
 #'  \item{Vcmax}{Maximum carboxylation rate (umol/m2/s)}
 #'  \item{Rleaf}{Basal leaf respiration (umol/m2/s)}
-#'  \item{Km}{TBD}
+#'  \item{Km}{TODO}
 #'  }
 #' @param I time series of photosynthetically active radiation (PAR)
 #' @return numeric value of the photosynthesis yield (basal respiration is removed) 
@@ -114,8 +114,6 @@ farquhar <- function(Ci, Fparams, I){
 }
 
 
-#' TBD I have no idea what this function is actually doing! hopefully it will come to light 
-#'
 #' @details
 #' Dietze, Michael C., and Jaclyn Hatala Matthes. 2014. “A General Ecophysiological Framework 
 #' for Modelling the Impact of Pests and Pathogens on Forest Ecosystems.” Ecology Letters 17 (11): 1418–26.

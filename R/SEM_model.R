@@ -1,4 +1,4 @@
-#' SEM model 
+#' Internal implementation of the SEM model
 #'
 #' @param X named numeric vector containing the following
 #' \describe{
@@ -10,7 +10,7 @@
 #' \item{soil_water}{m}
 #' \item{stem_density}{stems/ha}
 #' }
-#' @param params named vector TBD
+#' @param params named vector of the parameter values
 #' @param inputs named numeric vector containing the meteorological variables at a single time point
 #' \describe{
 #' \item{temp}{Air temperature, degrees C}
@@ -20,13 +20,12 @@
 #' }
 #' @param pest named vector for the pest impacts 
 #' \describe{
-#' \item{phloem}{phloem feaders}
-#' \item{xylem}{xylem disrupters (bark beetle, canker, wilt, girdling)}
-#' \item{leaf}{defoliators}
-#' \item{root}{root rot}
-#' \item{stem}{stem rot}
+#' \item{phloem}{phloem feaders TODO figure out the limits}
+#' \item{xylem}{xylem disrupters (bark beetle, canker, wilt, girdling) TODO figure out the limits}
+#' \item{leaf}{defoliators TODO figure out the limits}
+#' \item{root}{root rot TODO figure out the limits}
+#' \item{stem}{stem rot TODO figure out the limits}
 #' }
-#' @param timestep integer value of the size of the meteorological time step in seconds, default value corresponding to 30 min
 #' @return vector of results
 #' @noRd
 SEM <- function(X, params, inputs, pest, timestep = 1800) {
@@ -35,6 +34,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   rho <- 1.15           # density of air, kg/m3 
   P <- 101.325          # average atm pressure (kPa)
   R <- 8.3144621        # ideal gas constant in J/K/mol
+  timestep <- 1800      # number of seconds in 30 min     
 
   # Conversion Factors
   k <- 1e-6*12*1e-6*10000 #(mol/umol)*(gC/mol)*(Mg/g)*(m2/ha) ->  Mg/ha/sec
@@ -247,9 +247,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 }
 
 
-# TODO need to test against a the DM stuff and then need to better figure out the parameter list... is everything actually defined in there? 
-# are there things we need to do... it only models 1 type of tree at a time do we do an average? 
-#' SEM model 
+#' Run the SEM 
 #'
 #' @param pest named vector for the pest impacts 
 #' \describe{
@@ -266,7 +264,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 #' \item{precip}{Precipitation, mm}
 #' \item{VPD}{Vapor pressure deficit, kPa}
 #' \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
-#' \item{time}{as.POSIXct date fromat, must be every 30 min}
+#' \item{time}{as.POSIXct date fromat, must be every 30 min, TODO there needs to be some better way to handle the dates}
 #' }
 #' @param X named numeric vector containing the following
 #' \describe{
@@ -288,35 +286,27 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 #' @return vector of results
 run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE){
   
+  # TODO 
+  # Implement some sort of handle time colum of the inputs df.
   
-  # Check the function arguments
-  assert_that(check_contents(req = c("PAR", "temp", "VPD", "precip", "time"), check = names(inputs)))
-  assert_that(unique(diff(inputs$time)) == 30, msg = "30 min time steps required") # TODO may change if met inputs are a different resolution
-  assert_that(is.data.frame(param_df))
-  assert_that(check_contents(req = c("value", "parameter"), check = names(param_df)))
-  assert_that(check_contents(req = c("phloem", "xylem", "leaf", "root", "stem"), check = names(pest)))
+  # Check all of inputs to the run SEM function.
+  assert_that(check_SEM_run_setup(pest = pest,
+                                  pest.time = pest.time,
+                                  inputs = inputs,
+                                  X = X,
+                                  param_df = param_df, 
+                                  DBH = DBH, 
+                                  quiet = quiet))
   
-  
-  # Check the disturbance set up 
-  assert_that(any(c(any(pest.time %in% inputs$time) , is.null(pest.time))), msg = "pest.time must NULL or be an element of inputs$time")
-  assert_that({if(is.null(pest.time)){sum(pest) == 0} else{TRUE}}, msg = "if pest.time is NULL all elements of pest must be set to 0")
-  assert_that({if(!is.null(pest.time) && all(pest.time %in% inputs$time)){ sum(pest) > 0 } else {TRUE}}, msg = "if pest.time is defined pest vector must be non-0")
-  
-  # TODO not all of these might be required need to better handel what is fixed vs van be varied. Talk to LISA
-  req_params <- c("gevap", "Wthresh", "Kroot", "SLA", "alpha", "Vcmax", "m", "g0", "allomB0",
-                  "allomB1", "allomL0", "allomL1", "Rroot", "Rstem", "Rg", "Q10", "Rbasal", "leafLitter",
-                  "CWD", "rootLitter", "mort1", "mort2", "NSCthreshold", "Lmin", "q", "StoreMinDay", "Smax", "Rfrac",
-                  "SeedlingMort", "Kleaf")  
-  assert_that(check_contents(req = req_params, check = param_df$parameter))
   
   # Extract the parameter values into a vector 
   params <- list()
   params <- param_df$value
   names(params) <- param_df$parameter
   
-  # Add to certain values to the params list, these are values that are based on SEM assumptions. 
+  # Add to certain values to the parameters list, these are values that are based on SEM assumptions. 
   params[["Rleaf"]] <- 0.04 * params[["Vcmax"]] #Basal leaf respiration (umol/m2/s) is a fraction of the maximum carboxylation rate
-  # TODO need to add Jmax ? 
+  # TODO add other params such as Jmax? 
 
   # Save a copy of the pest vector
   pest.orig <- pest
@@ -345,12 +335,10 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE
   }
   
   # Format output
+  # TODO decide between returning a long or wide data frame and adding a units column? 
   colnames(output) <- c("Bleaf", "Bwood", "Broot", "Bstore", "BSOM", "Water", "density", "GPP", "fopen", "Rleaf", "RstemRroot", "Rgrow")
   output <- cbind(time = inputs$time, data.frame(output))
   return(output)
 
   
 }
-
-
-

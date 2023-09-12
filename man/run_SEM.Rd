@@ -4,7 +4,7 @@
 \alias{run_SEM}
 \title{SEM model}
 \usage{
-run_SEM(pest, pest.time, inputs, X, param_df)
+run_SEM(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE)
 }
 \arguments{
 \item{pest}{named vector for the pest impacts
@@ -24,7 +24,7 @@ run_SEM(pest, pest.time, inputs, X, param_df)
 \item{precip}{Precipitation, mm}
 \item{VPD}{Vapor pressure deficit, kPa}
 \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
-\item{time}{as.POSIXct date fromat, must be every 30 min}
+\item{time}{as.POSIXct date fromat, must be every 30 min, TODO there needs to be some better way to handle the dates}
 }}
 
 \item{X}{named numeric vector containing the following
@@ -43,6 +43,10 @@ run_SEM(pest, pest.time, inputs, X, param_df)
 \item{parameter}{character of the parameter name}
 \item{value}{double parameter values}
 }}
+
+\item{DBH}{diameter at breast height default value set to 10}
+
+\item{quiet}{boolean default set to TRUE if set to FALSE will print date}
 }
 \value{
 vector of results
