@@ -2,7 +2,7 @@
 % Please edit documentation in R/SEM_model.R
 \name{run_SEM}
 \alias{run_SEM}
-\title{SEM model}
+\title{Run the SEM}
 \usage{
 run_SEM(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE)
 }
@@ -52,5 +52,5 @@ run_SEM(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE)
 vector of results
 }
 \description{
-SEM model
+Run the SEM
 }
