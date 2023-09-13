@@ -1,5 +1,8 @@
 # Some helper functions that work to prep and check data for SEM format.
-#' Convert a netcdf file into a data frame that can be used by SEM
+
+
+
+#' Convert a NetCDF file into a data frame that SEM can use TODO not sure to export
 #'
 #'
 #' @param nc_path \describe{character path to the .nc file of met data, this
@@ -16,8 +19,7 @@
 #' @import ncdf4
 #' @export
 convert_nc_SEM <- function(nc_path) {
-  
-  # Quality check the nc before extracting the data required by SEM.
+  # Quality check the NetCDF before extracting the data required by SEM.
   assert_that(file.exists(nc_path))
   nc <- nc_open(nc_path)
   assert_that(class(nc) == "ncdf4")
@@ -28,7 +30,7 @@ convert_nc_SEM <- function(nc_path) {
   PAR <- ncvar_get(nc, "PAR")
   for (i in which(PAR < -10)) {
     PAR[i] <- PAR[i - 1]
-    } ## uber-naive gapfilling
+  } ## uber-naive gap filling
   
   temp <- ncvar_get(nc, "TA")
   VPD <- ncvar_get(nc, "VPD")
@@ -37,14 +39,19 @@ convert_nc_SEM <- function(nc_path) {
   nc_close(nc)
   
   # Format into a single data frame
-  out <- data.frame(time = time, PAR = PAR, temp = temp,
-                    VPD = VPD, precip = precip)
+  out <- data.frame(
+    time = time,
+    PAR = PAR,
+    temp = temp,
+    VPD = VPD,
+    precip = precip
+  )
   
   return(out)
 }
 
 
-#' Convert a netcdf file into a data frame that can be used by SEM
+#' Convert temperature from C to K
 #'
 #'
 #' @param temp numeric in degrees C to be converted into degrees K

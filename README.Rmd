@@ -1,0 +1,30 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# SEM
+
+<!-- badges: TODO zenodo -->
+<!-- badges: TODO github ci tests -->
+
+This is an R package implementation of the SEM created by Dietze and Matthes. See Dietze, Michael C., and  Jaclyn Hatala Matthes. 2014. A General Ecophysiological Framework for Modelling the Impact of Pests and Pathogens on Forest Ecosystems. Ecology Letters 17 (11): 1418–26 for the documentation manuscript and https://github.com/mdietze/PestED for the original model implementation.
+
+## Installation
+
+You can install the development version of SEM from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("kdorheim/SEM")
+```

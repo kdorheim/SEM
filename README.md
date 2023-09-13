@@ -1,7 +1,24 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # SEM
 
-<!-- badges: start -->
-[![R-CMD-check](https://github.com/kdorheim/SEM/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/kdorheim/SEM/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end -->
+<!-- badges: TODO zenodo -->
+<!-- badges: TODO github ci tests -->
 
-R package implementation of the Simple Ecosystem Model (SEM) originally documented in Dietze and Matthes 2014
+This is an R package implementation of the SEM created by Dietze and
+Matthes. See Dietze, Michael C., and Jaclyn Hatala Matthes. 2014. A
+General Ecophysiological Framework for Modelling the Impact of Pests and
+Pathogens on Forest Ecosystems. Ecology Letters 17 (11): 1418–26 for the
+documentation manuscript and <https://github.com/mdietze/PestED> for the
+original model implementation.
+
+## Installation
+
+You can install the development version of SEM from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("kdorheim/SEM")
+```

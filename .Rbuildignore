@@ -6,3 +6,6 @@
 ^pkgdown$
 ^\.github$
 ^data-raw$
+^vignettes/articles$
+^README\.Rmd$
+^CODE_OF_CONDUCT.md$

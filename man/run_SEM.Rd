@@ -2,9 +2,9 @@
 % Please edit documentation in R/SEM_model.R
 \name{run_SEM}
 \alias{run_SEM}
-\title{SEM model}
+\title{Run the SEM}
 \usage{
-run_SEM(pest, pest.time, inputs, X, params)
+run_SEM(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE)
 }
 \arguments{
 \item{pest}{named vector for the pest impacts
@@ -24,7 +24,7 @@ run_SEM(pest, pest.time, inputs, X, params)
 \item{precip}{Precipitation, mm}
 \item{VPD}{Vapor pressure deficit, kPa}
 \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
-\item{time}{as.POSIXct date fromat, must be every 30 min}
+\item{time}{as.POSIXct date fromat, must be every 30 min, TODO there needs to be some better way to handle the dates}
 }}
 
 \item{X}{named numeric vector containing the following
@@ -38,11 +38,19 @@ run_SEM(pest, pest.time, inputs, X, params)
 \item{stem_density}{stems/ha}
 }}
 
-\item{params}{named vector TBD}
+\item{param_df}{dataframe containing the following
+\describe{
+\item{parameter}{character of the parameter name}
+\item{value}{double parameter values}
+}}
+
+\item{DBH}{diameter at breast height default value set to 10}
+
+\item{quiet}{boolean default set to TRUE if set to FALSE will print date}
 }
 \value{
 vector of results
 }
 \description{
-SEM model
+Run the SEM
 }

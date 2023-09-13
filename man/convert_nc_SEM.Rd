@@ -2,7 +2,7 @@
 % Please edit documentation in R/fxns_data.R
 \name{convert_nc_SEM}
 \alias{convert_nc_SEM}
-\title{Convert a netcdf file into a data frame that can be used by SEM}
+\title{Convert a NetCDF file into a data frame that SEM can use TODO not sure to export}
 \usage{
 convert_nc_SEM(nc_path)
 }
@@ -21,5 +21,5 @@ a data frame consisting of columns of the following:
 }
 }
 \description{
-Convert a netcdf file into a data frame that can be used by SEM
+Convert a NetCDF file into a data frame that SEM can use TODO not sure to export
 }

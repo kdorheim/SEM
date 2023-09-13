@@ -1,0 +1,127 @@
+---
+title: "Example Run"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+TODO unclear if this example will make it into the final release or if would do a more generalized example. 
+
+```{r setup, warning=FALSE, message=FALSE}
+library(SEM)
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+
+Load the example meteorological data. 
+
+```{r}
+metdata <- read.csv(system.file("metdata/example_inputs.csv", package = "SEM"))
+metdata$time <- seq(as.POSIXct("2005-01-01 00:00"), as.POSIXct("2005-12-31 23:30"), by = 1800) #TODO should figure out a better way to handel this
+```
+
+
+Quick visualize the meteorological data 
+
+```{r}
+# reformat into a long df for easy plotting
+metdata %>% 
+  gather(variable, value, -time) -> 
+  long_metdata
+
+
+long_metdata %>% 
+  ggplot(aes(time, value)) + 
+  geom_line() + 
+  facet_wrap("variable", scales = "free")
+```
+
+# Control Run
+Run SEM 
+
+```{r}
+pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
+SEMout_pest0 <- run_SEM(pest = pest0, 
+                        pest.time = NULL, 
+                        inputs = metdata, 
+                        X = pools,              # SEM::pools
+                        param_df = params_df)   # SEM::params_df
+```
+
+
+Take a look at SEM results. 
+
+GPP from the entire run. 
+
+```{r}
+ggplot(data = SEMout_pest0, aes(time, GPP)) + 
+  geom_line() 
+```
+
+
+GPP for a week in the middle of the year.  
+
+```{r}
+SEMout_pest0 %>% 
+  filter(time > "2005-08-01" & time <"2005-08-07") -> 
+  aug_control 
+aug_control %>% 
+  ggplot(aes(time, GPP)) + 
+  geom_line() + 
+  labs(tittle = "GPP from 1st Week in August")
+```
+
+
+
+# Disturbance Run 
+
+
+```{r}
+pest_leaf <- c("phloem" = 0, "xylem" = 0, "leaf" = 0.8, "root" = 0, "stem" = 0)
+SEMout_pest_leaf <- run_SEM(pest = pest_leaf, 
+                        pest.time = as.POSIXct("2005-08-02 09:30:00 EDT"), 
+                        inputs = metdata, 
+                        X = pools,              # SEM::pools
+                        param_df = params_df)   # SEM::params_df
+
+
+```
+
+
+
+GPP from the entire run. It is hard to see here.... 
+
+```{r}
+ggplot(data = SEMout_pest_leaf, aes(time, GPP)) + 
+  geom_line() 
+```
+
+
+```{r}
+SEMout_pest_leaf %>% 
+  filter(time > "2005-08-01" & time <"2005-08-07") -> 
+  aug_disturbance 
+
+ggplot(data = aug_disturbance, aes(time, GPP)) + 
+  geom_line() + 
+  labs(tittle = "GPP from 1st Week in August Distubance Run")
+```
+
+Compare GPP between the two runs. 
+
+```{r}
+ggplot() + 
+  geom_line(data = aug_control, aes(time, GPP, color = "Control Run"),
+            linewidth = 1, alpha = 0.8) + 
+  geom_line(data = aug_disturbance, aes(time, GPP, color = "Disturbance Run"), 
+            linewidth = 1,  alpha = 0.8) 
+```
+

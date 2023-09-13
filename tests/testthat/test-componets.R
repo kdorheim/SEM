@@ -48,9 +48,15 @@ test_that("ballberry works", {
   expected_out <- 165.0397
   out <- ballberry(input = c(15, 0.1),
                    BBparams = c(g0 = g0, m = m),
-                   Fparams = c(Vcmax = Vcmax, Jmax = Jmax, Rleaf = Rleaf,
-                               Gstar = Gstar, alpha = alpha, Km = Km),
-                   obs = c(Ca = Ca, VPD = VPD, PAR = PAR))
+                   Fparams = c(Vcmax = Vcmax, 
+                               Jmax = Jmax,
+                               Rleaf = Rleaf,
+                               Gstar = Gstar,
+                               alpha = alpha,
+                               Km = Km),
+                   obs = c(Ca = Ca, 
+                           VPD = VPD,
+                           PAR = PAR))
   expect_equal(out, expected_out, tolerance = 1e-4)
 })
 
