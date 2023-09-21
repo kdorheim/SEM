@@ -17,10 +17,10 @@ check_contents <- function(req, check){
   
   if (length(missing) == 0) {
     return(TRUE)
-    } else {
-      stop("following required contents not found: ",
-           paste0(missing, collapse = ", "))
-      }
+  } else {
+    stop("following required contents not found: ",
+         paste0(missing, collapse = ", "))
+  }
 }
 
 
@@ -64,3 +64,27 @@ check_SEM_run_setup <- function(pest, pest.time, inputs, X, param_df, DBH, quiet
   
   return(TRUE)
 }
+
+
+#' Update parameter values defined in the \code{params_df} 
+#'
+#'
+#' @param df data frame of the SEM parameter values 
+#' @param new named numeric vector of the parameter values to be updated
+#' @return SEM paramter data frame with the new parameter values
+#' @export
+update_params <- function(df, new){
+  
+  # Note this check might change if the number of tune able parameters being 
+  # read into the SEM change for whatever reason. 
+  assert_that(all(dim(df) == list(33, 2)))
+  assert_that(check_contents(req = c("parameter", "value"), check = names(df)))
+  assert_that(is.vector(new) & is.numeric(new) & !is.null(names(new)))
+  assert_that(all(names(new) %in% df$parameter))
+  
+  to_keep <- df[! df$parameter %in% names(new), ]
+  out <- rbind(to_keep, 
+               data.frame(parameter = names(new), value = new, row.names = NULL))
+  return(out)
+}
+

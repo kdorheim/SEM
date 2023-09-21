@@ -284,6 +284,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 #' @param DBH diameter at breast height default value set to 10
 #' @param quiet boolean default set to TRUE if set to FALSE will print date
 #' @return vector of results
+#' @export
 run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE){
   
   # TODO 

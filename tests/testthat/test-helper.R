@@ -46,3 +46,15 @@ test_that("check_SEM_run_setup", {
  
 })
 
+
+test_that("update_params", {
+  
+  expect_error(update_params(df = params_df[1:4, ], new = c("Kroot" = 0.5)))
+  expect_error(update_params(df = params_df, new = c("fake" = 0.5)))
+  
+  new_val <- c("Kroot" = 0.5)
+  new_df <- update_params(df = params_df, new = new_val)
+  expect_true(new_df[new_df$parameter == "Kroot", ]$value == new_val)
+  expect_true(unlist(new_df[new_df$parameter == "Kroot", ]$value) != unlist(params_df[params_df$parameter == "Kroot", ]$value))
+  
+})
