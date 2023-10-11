@@ -24,8 +24,8 @@ theme_set(theme_bw())
 Load the example meteorological data. 
 
 ```{r}
-metdata <- read.csv(system.file("metdata/example_inputs.csv", package = "SEM"))
-metdata$time <- seq(as.POSIXct("2005-01-01 00:00"), as.POSIXct("2005-12-31 23:30"), by = 1800) #TODO should figure out a better way to handel this
+# Using the read_SEM_met function to read in the meteorological so that 
+metdata <- read_SEM_met(system.file("metdata/example_inputs.csv", package = "SEM"))
 ```
 
 

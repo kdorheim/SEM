@@ -58,3 +58,10 @@ test_that("update_params", {
   expect_true(unlist(new_df[new_df$parameter == "Kroot", ]$value) != unlist(params_df[params_df$parameter == "Kroot", ]$value))
   
 })
+
+test_that("read_SEM_met", {
+  expect_error(read_SEM_met("comp_data.csv"))
+  x <- read_SEM_met("inputs.csv")
+  expect_true(all(class(x$time) == list("POSIXct", "POSIXt")))
+
+})

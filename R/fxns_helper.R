@@ -88,3 +88,44 @@ update_params <- function(df, new){
   return(out)
 }
 
+
+#' Load and format the SEM meteorological input file 
+#'
+#' This function helps handle the time column which can be affected by being 
+#' saved as a csv file. 
+#'
+#' @param f character pathway of the meteorological file to read into R file should have the following contents
+#' \describe{
+#' \item{time}{date & time column YYYY-MM-DD HH:MM:SS}
+#' \item{temp}{Air temperature, degrees C}
+#' \item{precip}{Precipitation, mm}
+#' \item{VPD}{Vapor pressure deficit, kPa}
+#' \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
+#' }
+#' @importFrom utils read.csv
+#' @return SEM paramter data frame with the new parameter values
+#' @export
+#' @examples
+#' \donttest{
+#' # Using the regular read.csv function can cause the problems with the time column. 
+#' metdata <- read.csv(system.file("metdata/example_inputs.csv", package = "SEM"))
+#' head(metdata$time)
+#' class(metdata$time)
+#' 
+#' # Where as using the read_SEM_met function returns a the time column with the 
+#' # correct date and time information. 
+#' metdata <- read_SEM_met(system.file("metdata/example_inputs.csv", package = "SEM"))
+#' head(metdata$time)
+#' class(metdata$time)
+#' }
+read_SEM_met <- function(f){
+  assert_that(file.exists(f))
+  d <- read.csv(f)
+  check_contents(req = c("time", "PAR", "temp", "VPD",  "precip"), 
+                 check = names(d))
+  assert_that(any(nchar(d$time) > 11), msg = "time column missing hh:mm data")
+  d$time <-  ifelse(nchar(d$time) > 11, d$time, paste0(d$time," 00:00:00"))
+  d$time <- as.POSIXct(d$time)
+  return(d)
+}
+
