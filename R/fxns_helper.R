@@ -124,8 +124,8 @@ read_SEM_met <- function(f){
   check_contents(req = c("time", "PAR", "temp", "VPD",  "precip"), 
                  check = names(d))
   assert_that(any(nchar(d$time) > 11), msg = "time column missing hh:mm data")
-  d$time <-  ifelse(nchar(d$time) > 11, d$time, paste0(d$time," 00:00:00"))
-  d$time <- as.POSIXct(d$time)
+  time <-  ifelse(nchar(d$time) > 11, d$time, paste0(d$time," 00:00:00"))
+  d$time <- as.POSIXct(time, tz = "UTC")
   return(d)
 }
 
