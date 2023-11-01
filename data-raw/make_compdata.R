@@ -56,7 +56,6 @@ X[7] <- 700
 
 names(X) <- c("leaf", "wood", "root", "storage", "som", "soil_water", "stem_density")
 met_input_df <- read.csv("./inst/metdata/example_inputs.csv")
-met_input_df[["time"]] <- seq(as.POSIXct("2005-01-01 00:00"), as.POSIXct("2005-12-31 23:30"), by = 1800)
 met_input_df <- met_input_df[1:100, ]
 write.csv(met_input_df, file = "tests/testthat/inputs.csv", row.names = FALSE)
 
@@ -67,6 +66,5 @@ names(params) <- NULL
 p_df$value <- params
 
 SEMout <- run_SEM(pest = pest0, pest.time = NULL, inputs = met_input_df, X = X, param_df = p_df)
-
 write.csv(SEMout, file = "tests/testthat/comp_data.csv", row.names = FALSE)
 

@@ -42,19 +42,24 @@ check_SEM_run_setup <- function(pest, pest.time, inputs, X, param_df, DBH, quiet
   
   # Check the function arguments
   assert_that(check_contents(req = c("phloem", "xylem", "leaf", "root", "stem"), check = names(pest)))
-  assert_that(any(class(pest.time)[1] ==  "POSIXct", is.null(pest.time)), msg = "pest.time must be set to null or a POSIXct date")
   assert_that(check_contents(req = c("PAR", "temp", "VPD", "precip", "time"), check = names(inputs)))
-  assert_that(all(class(inputs$time) == list( "POSIXct", "POSIXt")), msg = "time column of inputs must be a POSIXt date-time class")
-  assert_that(unique(diff(inputs$time)) == 30, msg = "30 min time steps required")
-  assert_that(is.data.frame(param_df))
+  # Check to make sure that the time column is in YYYYMMDDHHMM format with 30 min resolution, 
+  # this is not the most robust way of handeling dates or fool proof for checking for 30 mins. 
+  assert_that(all(nchar(inputs$time) == 12), msg = "time column requires yyyymmddhhmm format")
+  assert_that(min(diff(inputs$time)) == 30, msg = "data should be half hourly")
+    assert_that(is.data.frame(param_df))
   assert_that(check_contents(req = c("value", "parameter"), check = names(param_df)))
   assert_that(is.numeric(DBH), msg = "DBH must be numeric")
   
   # Check the disturbance set up 
-  assert_that(any(c(any(pest.time %in% inputs$time) , is.null(pest.time))), msg = "pest.time must NULL or be an element of inputs$time")
-  assert_that({if(is.null(pest.time)){sum(pest) == 0} else{TRUE}}, msg = "if pest.time is NULL all elements of pest must be set to 0")
-  assert_that({if(!is.null(pest.time) && all(pest.time %in% inputs$time)){ sum(pest) > 0 } else {TRUE}}, msg = "if pest.time is defined pest vector must be non-0")
-  
+  if(!is.null(pest.time)){
+    assert_that(all(pest.time %in% inputs$time), msg = "pest.time must NULL or be an element of inputs$time")
+    assert_that(sum(pest) > 0, msg = "no pest treatment defined")
+  }
+  if(is.null(pest.time)){
+    assert_that(sum(pest) == 0, msg = "if pest.time is NULL all elements of pest must be set to 0")
+  }
+
   # TODO not all of the parameters might have to be read in each time, some might be fixed, talk to LH.
   req_params <- c("gevap", "Wthresh", "Kroot", "SLA", "alpha", "Vcmax", "m", "g0", "allomB0",
                   "allomB1", "allomL0", "allomL1", "Rroot", "Rstem", "Rg", "Q10", "Rbasal", "leafLitter",
@@ -89,6 +94,67 @@ update_params <- function(df, new){
 }
 
 
+#' Parse out the year information from yyyymmddhhmm
+#'
+#' @param x numeric vector of time yyyymmddhhmm
+#' @return year value
+#' @noRd
+get_year <- function(x){
+  assert_that( all(nchar(x) == 12), msg = "x must be a character with lenght 12 aka YYYYMMDDHHMM")
+  out <- substr(x = x, start = 1, stop = 4)
+  return(out)
+  
+}
+
+
+#' Parse out the month information from yyyymmddhhmm
+#'
+#' @param x numeric vector of time yyyymmddhhmm
+#' @return month value
+#' @noRd
+get_month <- function(x){
+  assert_that( all(nchar(x) == 12), msg = "x must be a character with lenght 12 aka YYYYMMDDHHMM")
+  out <- substr(x = x, start = 5, stop = 6)
+  return(out)
+}
+
+
+#' Parse out the day information from yyyymmddhhmm
+#'
+#' @param x numeric vector of time yyyymmddhhmm
+#' @return day value
+#' @noRd
+get_day <- function(x){
+  assert_that( all(nchar(x) == 12), msg = "x must be a character with lenght 12 aka YYYYMMDDHHMM")
+  out <- substr(x = x, start = 7, stop = 8)
+  return(out)
+}
+
+
+#' Parse out the hour information from yyyymmddhhmm
+#'
+#' @param x numeric vector of time yyyymmddhhmm
+#' @return hour value
+#' @noRd
+get_hr <- function(x){
+  assert_that( all(nchar(x) == 12), msg = "x must be a character with lenght 12 aka YYYYMMDDHHMM")
+  out <- substr(x = x, start = 9, stop = 10)
+  return(out)
+}
+
+
+#' Parse out the minute information from yyyymmddhhmm
+#'
+#' @param x numeric vector of time yyyymmddhhmm
+#' @return minute value
+#' @noRd
+get_min <- function(x){
+  assert_that( all(nchar(x) == 12), msg = "x must be a character with lenght 12 aka YYYYMMDDHHMM")
+  out <- substr(x = x, start = 11, stop = 12)
+  return(out)
+}
+
+
 #' Load and format the SEM meteorological input file 
 #'
 #' This function helps handle the time column which can be affected by being 
@@ -96,7 +162,7 @@ update_params <- function(df, new){
 #'
 #' @param f character pathway of the meteorological file to read into R file should have the following contents
 #' \describe{
-#' \item{time}{date & time column YYYY-MM-DD HH:MM:SS}
+#' \item{time}{date & time column YYYYMMDDHHMM}
 #' \item{temp}{Air temperature, degrees C}
 #' \item{precip}{Precipitation, mm}
 #' \item{VPD}{Vapor pressure deficit, kPa}
@@ -123,9 +189,11 @@ read_SEM_met <- function(f){
   d <- read.csv(f)
   check_contents(req = c("time", "PAR", "temp", "VPD",  "precip"), 
                  check = names(d))
-  assert_that(any(nchar(d$time) > 11), msg = "time column missing hh:mm data")
-  time <-  ifelse(nchar(d$time) > 11, d$time, paste0(d$time," 00:00:00"))
-  d$time <- as.POSIXct(time, tz = "UTC")
+  
+  # Check to make sure that the time column is in YYYYMMDDHHMM format with 30 min resolution, 
+  # this is not the most robust way of handeling dates or fool proof for checking for 30 mins. 
+  assert_that(all(nchar(d$time) == 12), msg = "time column requires YYYYMMDDHHMM format")
+
   return(d)
 }
 

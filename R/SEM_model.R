@@ -239,7 +239,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   X[["som"]] <- X[["som"]] - Rh * k * timestep
   
   # Format Output  ----------
-  out <- c(X, GPP, fopen, Rleaf, Rstem + Rroot, Rg / ktree / timestep)
+  out <- c(X, GPP, fopen, Rleaf, Rstem + Rroot, Rg / ktree / timestep, LAI, Rh)
   names(out) <- NULL
   
   return(out)
@@ -311,15 +311,20 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE
   
   # Save a copy of the pest vector
   pest.orig <- pest
+  pest <- c("phloem" = 0,  "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
   
   # Set up the data frame to store the output results in. 
-  output <- array(NA, c(length(inputs$time), 12))
+  output <- array(NA, c(length(inputs$time), 14))
+  
+  
   for(t in inputs$time){
     ## turn pests on/off
-    if(t %in% as.integer(pest.time)){
-      pest <- pest.orig
-    } else {
-      pest <- c("phloem" = 0,  "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
+    if(!is.null(pest.time)){
+      if(t %in% pest.time){
+        pest <- pest.orig
+      } else {
+        pest <- c("phloem" = 0,  "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
+      }
     }
     
     # Index over the different meteorology
@@ -333,11 +338,13 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE
     hms <- format(inputs$time[index], format = "%H:%M:%S")
     if (!quiet) if(date == "01" & hms == "00:00:00"){print(inputs$time[index])}
     
-  }
+  } 
   
   # Format output
   # TODO decide between returning a long or wide data frame and adding a units column? 
-  colnames(output) <- c("Bleaf", "Bwood", "Broot", "Bstore", "BSOM", "Water", "density", "GPP", "fopen", "Rleaf", "RstemRroot", "Rgrow")
+  colnames(output) <- c("Bleaf", "Bwood", "Broot", "Bstore", "BSOM", "Water", 
+                        "density", "GPP", "fopen", "Rleaf", "RstemRroot", 
+                        "Rgrow", "LAI", "Rh")
   output <- cbind(time = inputs$time, data.frame(output))
   return(output)
   
