@@ -50,10 +50,11 @@ arrhenius <- function(observed.value, new.temp, old.temp = 25) {
 #' @noRd
 ballberry <- function(input, BBparams, Fparams, obs) {
   
-  assert_that(check_contents(req = c("Ca", "VPD", "PAR"), check = names(obs)),
-              msg = "obs")
-  assert_that(check_contents(req = c("g0", "m"), check = names(BBparams)),
-              msg = "BBparams")
+  # Defensive programming during the major development stage... 
+  # assert_that(check_contents(req = c("Ca", "VPD", "PAR"), check = names(obs)),
+  #             msg = "obs")
+  # assert_that(check_contents(req = c("g0", "m"), check = names(BBparams)),
+  #             msg = "BBparams")
   
   ## is actually the Medlyn et al 2011 model
   Ci <- obs[["Ca"]] - 1.6 * input[1] / input[2] # intercellular  CO2 concentration is
@@ -97,8 +98,9 @@ ballberry <- function(input, BBparams, Fparams, obs) {
 #' @noRd
 farquhar <- function(Ci, Fparams, I){
   
-  req <- c("alpha", "Jmax", "Gstar", "Vcmax", "Rleaf", "Km")
-  assert_that(check_contents(req, check = names(Fparams)))
+  # Defensive programming during the major development stage... 
+  # req <- c("alpha", "Jmax", "Gstar", "Vcmax", "Rleaf", "Km")
+  # assert_that(check_contents(req, check = names(Fparams)))
   
   a <- 0.9 ## curvature parameter
   b <- -(Fparams[["alpha"]] * I + Fparams[["Jmax"]])
