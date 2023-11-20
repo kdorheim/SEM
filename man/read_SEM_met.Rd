@@ -9,7 +9,7 @@ read_SEM_met(f)
 \arguments{
 \item{f}{character pathway of the meteorological file to read into R file should have the following contents
 \describe{
-\item{time}{date & time column YYYY-MM-DD HH:MM:SS}
+\item{time}{date & time column YYYYMMDDHHMM}
 \item{temp}{Air temperature, degrees C}
 \item{precip}{Precipitation, mm}
 \item{VPD}{Vapor pressure deficit, kPa}
