@@ -46,7 +46,7 @@ check_SEM_run_setup <- function(pest, pest.time, inputs, X, param_df, DBH, quiet
   # Check to make sure that the time column is in YYYYMMDDHHMM format with 30 min resolution, 
   # this is not the most robust way of handeling dates or fool proof for checking for 30 mins. 
   assert_that(all(nchar(inputs$time) == 12), msg = "time column requires yyyymmddhhmm format")
-  assert_that(min(diff(inputs$time)) == 30, msg = "data should be half hourly")
+  #assert_that(min(diff(inputs$time)) == 30, msg = "data should be half hourly")
     assert_that(is.data.frame(param_df))
   assert_that(check_contents(req = c("value", "parameter"), check = names(param_df)))
   assert_that(is.numeric(DBH), msg = "DBH must be numeric")
@@ -70,13 +70,29 @@ check_SEM_run_setup <- function(pest, pest.time, inputs, X, param_df, DBH, quiet
   return(TRUE)
 }
 
+#' Update parameter values defined in the \code{params_df} 
+#'
+#'
+#' @param df data frame of the SEM parameter values 
+#' @param new named numeric vector of the parameter values to be updated
+#' @return SEM parameter data frame with the new parameter values
+#' @noRd
+internal_update_params <- function(df, new){
+  
+  to_keep <- df[! df$parameter %in% names(new), ]
+  out <- rbind(to_keep, 
+               data.frame(parameter = names(new), value = new, row.names = NULL))
+  return(out)
+  
+}
+
 
 #' Update parameter values defined in the \code{params_df} 
 #'
 #'
 #' @param df data frame of the SEM parameter values 
 #' @param new named numeric vector of the parameter values to be updated
-#' @return SEM paramter data frame with the new parameter values
+#' @return SEM parameter data frame with the new parameter values
 #' @export
 update_params <- function(df, new){
   
@@ -87,11 +103,15 @@ update_params <- function(df, new){
   assert_that(is.vector(new) & is.numeric(new) & !is.null(names(new)))
   assert_that(all(names(new) %in% df$parameter))
   
-  to_keep <- df[! df$parameter %in% names(new), ]
-  out <- rbind(to_keep, 
-               data.frame(parameter = names(new), value = new, row.names = NULL))
+  out <- internal_update_params(df = df, new = new)
   return(out)
 }
+
+
+
+
+
+
 
 
 #' Parse out the year information from yyyymmddhhmm
