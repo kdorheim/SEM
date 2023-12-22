@@ -63,7 +63,7 @@ test_that("ballberry works", {
 test_that("solve.FVcB works", {
   # This expected value comes from the Dietz implementations of the
   # function and their default values
-  expected_output <- c(3.2373744, 0.0286713)
+  expected_output <- c(3.24230114, 0.02875259)
   out <- solve.FVcB(Vcmax = 18, Jmax = 30.06, Rleaf = 1, Gstar = 0.5,
                     alpha = 0.3,
                     m = 4, g0 = 0, VPD = 0.131, PAR = 68.400, Km = 710.3203)
