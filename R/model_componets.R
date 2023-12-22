@@ -146,15 +146,13 @@ solve.FVcB <- function(Vcmax, Jmax, Rleaf, Gstar, alpha, m, g0, VPD, PAR, Km,
   
   
   fit <- optim(inital_guess,			  # solve simultaneously for An.pred and gs.pred
-               ballberry,
+               fn = ballberry,
                BBparams = BBparams,	# Ballberry params                                                                                                                                                                                                                                                                                                            
                Fparams = Fparams,	  # Farquhar params
-               obs = obs)  		
+               method = "L-BFGS-B",
+               obs = obs, 
+               lower = c(1e-15, 1e-15),
+               upper = Inf)		
   
-  if(fit$par[2] >= 0){
-    out <- fit$par
-  } else { 
-    out <- c(0, 0)
-  }
-  return(out)
+  return(fit$par)
 }
