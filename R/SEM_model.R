@@ -30,6 +30,8 @@
 #' @noRd
 SEM <- function(X, params, inputs, pest, timestep = 1800) {
   
+  # TODO consider moving the constants to the run_SEM function so these 
+  # values are not being defined with every itteration of SEM. 
   # Constants
   rho <- 1.15           # density of air, kg/m3 
   P <- 101.325          # average atm pressure (kPa)
@@ -336,7 +338,11 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE
     # Check time
     date <- format(inputs$time[index], format = "%d")
     hms <- format(inputs$time[index], format = "%H:%M:%S")
-    if (!quiet) if(date == "01" & hms == "00:00:00"){print(inputs$time[index])}
+    if (!quiet){ 
+     # if(date == "01" & hms == "00:00:00"){
+        print(inputs$time[index])
+      # }
+      }
     
   } 
   

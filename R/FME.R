@@ -36,6 +36,37 @@
 #' @return results of the FME::sensRange
 #' @export
 #' @family sensitivity
+#' @examples
+#' \dontrun{
+#' # Set up the inputs data frame.
+#' PAR <- c(23.5, 51.4, 85.0, 110.8, 148.9, 213.1)
+#' temp <- c(-5.1, -5.2, -5.1, -5.1, -5.1, -5.0)
+#' VPD <- c(0.009, 0.010, 0.009, 0.010, 0.010, 0.009)
+#' precip <- rep(0, 6)
+#' time <- c(200701010000, 200701010030, 200701010100, 200701010130, 200701010200, 200701010230)
+#' inputs <- data.frame(time = time, PAR = PAR, temp = temp, VPD = VPD, precip = precip)
+#' # Set up the paramters to perturb 
+#' pars <- c("Vcmax" = 18,"leafLitter" = 1.883562e-05)
+#' prange <- data.frame(min = pars - pars * 0.75,
+#'                 max = pars + pars * 0.75)
+#' # Run the sensfunc 
+#' out <- SEM_sensrange(pars = pars,
+#'                      parRange = prange,
+#'                      param_df = params_df,
+#'                      inputs = inputs,
+#'                      X = pools,
+#'                      DBH = 10)
+#'                      
+#' # Default plots 
+#' plot(out)
+#' # Using the helper functions.
+#' to_plot <- format_sensout(out)
+#' # Plot results 
+#' ggplot(data = to_plot) +
+#'   geom_line(aes(time, Mean)) +
+#'   geom_ribbon(aes(time, ymin = Min, ymax = Max), alpha = 0.5) +
+#'   facet_wrap("variable", scales = "free")
+#' }
 SEM_sensrange <- function(pars, 
                           parRange, 
                           param_df,
@@ -91,6 +122,36 @@ SEM_sensrange <- function(pars,
 #' @return results of the FME::sensRange
 #' @export
 #' @family sensitivity
+#' @examples
+#'\dontrun{
+#'   
+#' # Test the sensitivity of the SEM output to Vcmax and leafLitter
+#' # Set up the inputs data frame.
+#' PAR <- c(23.5, 51.4, 85.0, 110.8, 148.9, 213.1)
+#' temp <- c(-5.1, -5.2, -5.1, -5.1, -5.1, -5.0)
+#' VPD <- c(0.009, 0.010, 0.009, 0.010, 0.010, 0.009)
+#' precip <- rep(0, 6)
+#' time <- c(200701010000, 200701010030, 200701010100, 200701010130, 200701010200, 200701010230)
+#' inputs <- data.frame(time = time, PAR = PAR, temp = temp, VPD = VPD, precip = precip)
+#' 
+#' # Set up the paramters to perturb 
+#' pars <- c("Vcmax" = 18,"leafLitter" = 1.883562e-05)
+#' 
+#' # Run the sensfunc 
+#' out <- SEM_sensfunc(pars = pars, 
+#'                     param_df = params_df,
+#'                     inputs = inputs,
+#'                     X = pools,
+#'                     DBH = 10)
+#' 
+#' # Using the helper functions.
+#' to_plot <- format_sensout(out)
+#' 
+#' # Plot results 
+#' ggplot(data = to_plot) +
+#'   geom_line(aes(time, value, color = parameter)) +
+#'   facet_wrap("variable", scales = "free")
+#'}
 SEM_sensfunc <- function(pars, 
                          param_df,
                          inputs, 
