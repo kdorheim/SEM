@@ -1,7 +1,7 @@
 test_tol <- 1e-6
 
 
-# Define the paramters and inputs that will be used by all of thests 
+# Define the parameters and inputs that will be used by all of tests 
 params <- params_df$value
 names(params) <- params_df$parameter
 p_df <- params_df

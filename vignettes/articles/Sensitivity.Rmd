@@ -1,0 +1,181 @@
+---
+title: "Sensitivity"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+TODO add text describing the purpose of the sensitivity functions and background 
+on FME.. 
+
+There are three SEM functions included to help users perform sensitivity analyses
+
+* `SEM_sensfunc` - estimates the local effect of certain parameters on the SEM model based on an implementation of the FME [sensFunc](https://cran.r-project.org/web/packages/FME/FME.pdf) function 
+* `SEM_sensrange` - estimates the global effect of certain parameters on the SEM model based on an implementation of the FME [sensRange](https://cran.r-project.org/web/packages/FME/FME.pdf) function 
+* `format_sensout` - helper function that formats the objects returned by `SEM_sensfunc` and `SEM_sensrange` for easy plotting
+
+
+# Set Up 
+
+
+```{r setup, message=FALSE, warning=FALSE}
+# This assumes that the SEM package is already installed on your local machine. 
+# Follow installation instructions if needed. 
+library(SEM)
+
+# Load additional packages used in this example. 
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(lubridate)
+
+
+# Plotting 
+theme_set(theme_bw())
+```
+Load meteorological inputs, initial pools sizes, and parameter frames to be used as the 
+default run. 
+
+```{r}
+# Read in the meteorological data that will be used to drive the runs. 
+met_inputs <- read_SEM_met(system.file("metdata/example_inputs.csv", package = "SEM")) 
+
+# TODO there is a problem with the input data it looks like in march we are missing 1.5 hours 
+# worth of data... for now limit the met input data for a portion of data that we 
+# know actually works 
+met_inputs <- met_inputs[1:4428, ]
+
+
+# Define the set up fo a no pest run  
+pests <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
+pest_time <- NULL
+
+# Load default initial pools and parameter data frames to use in the model runs. 
+pools <- get("pools")
+params <- get("params_df")
+```
+
+# Defualt run Complete the default run - might want to delete... 
+
+```{r}
+default_out <- run_SEM(pests, pest_time, met_inputs, pools, params)
+```
+
+
+```{r}
+
+default_out[1:96, ] %>% 
+  mutate(time = ymd_hm(time)) %>% 
+  ggplot(aes(time, GPP)) + 
+  geom_line()
+
+```
+
+
+While the any of the SEM model parameters see `SEM::params_df` can be perturbed in the `SEM_sensrange` and `SEM_sensfunc` functions here we will limit our sensitivity analysis to three parameters related to modeling photosynthesis Vcmax (maximum carboxylation rate) and Jmax (maximum electron transport rate). 
+
+
+# Global Sensitivity 
+
+Here we demonstrate how to use the `SEM_sensrange` function to look at the global 
+effects of Vcmax and Jmax. 
+
+```{r}
+# Set up the parameters to vary 
+pars <- c("Vcmax" =  18, "Jmax" = 30.06)
+
+# The ranges to explore per parameter. 
+prange <- data.frame(min = pars - pars * 0.15,
+                     max = pars + pars * 0.15)
+
+prange
+```
+Use `SEM_sensrange` to run SEM with different parameter combinations. 
+
+```{r}
+global_out <- SEM_sensrange(pars = pars,
+                            parRange = prange, 
+                            param_df = params, 
+                            inputs = met_inputs, 
+                            X = pools, 
+                            DBH = 10,
+                            pest = pests,
+                            pest.time = NULL,
+                            n = 10) # n is the number of SEM runs to limit run time set this value to 10, increasing n will increase the run time. 
+```
+
+
+```{r}
+# Use the format_sensout function to transform the object returned by the 
+# SEM_sensrange function into 
+global_out_to_plot <- format_sensout(global_out) %>% 
+  mutate(time = ymd_hm(time))
+```
+
+Plot results 
+
+```{r}
+# Select a few variables to look at
+vars_to_plot <- c("GPP", "Rleaf", "Bleaf", "Rh")
+
+global_out_to_plot %>% 
+  filter(variable %in% vars_to_plot) %>% 
+  # Select only a handful of dates to visualize otherwise it gets to be a lot. 
+  filter(date(time) %in% c("2005-03-21", "2005-03-22", "2005-03-23")) %>% 
+  ggplot() + 
+  geom_line(aes(time, Mean)) +
+  geom_ribbon(aes(time, ymin = Min, ymax = Max), alpha = 0.5) + 
+  facet_wrap("variable", scales = "free") + 
+  labs(x = NULL, y = NULL)
+```
+
+This figure shows the min/max and the mean values over three days for a handful of SEM results. Since the two parameters varied in this analysis are related to photosynthesis is is not surprising that that output for heterotrophic respiration has little variability especially when compared to leaf related variables such as GPP, leaf biomass, and autotrophic respiration. 
+
+
+# Local Sensitivity 
+
+Now let's take a look at the local effects of Vcmax and Jmax on SEM output. 
+
+```{r, message=FALSE}
+local_out <- SEM_sensfunc(pars = pars,
+                          param_df = params, 
+                          inputs = met_inputs, 
+                          X = pools, 
+                          DBH = 10) 
+```
+
+
+Summary table of the sensitivity functions, for each of the parameters calculate the L-1 norm, L-2 norm, Mean, Min, and Max of the sensitivity functions (more documentation)[https://search.r-project.org/CRAN/refmans/FME/html/sensFun.html]. 
+```{r}
+summary(local_out)
+```
+Per parameter pairs plot of the sensitivity results. 
+
+```{r}
+pairs(local_out)
+```
+
+
+```{r}
+# Format the results for easy plotting. 
+local_out %>% 
+  format_sensout() %>% 
+  mutate(time = ymd_hm(time)) -> 
+  local_out_plotting
+
+
+# Select a few variables to look at
+vars_to_plot <- c("GPP", "Rleaf", "Bleaf", "Rh")
+
+local_out_plotting %>% 
+  filter(variable %in% vars_to_plot) %>% 
+  # Select only a handful of dates to visualize otherwise it gets to be a lot. 
+  ggplot() + 
+  geom_line(aes(time, value, color = parameter)) +
+  facet_wrap("variable", scales = "free") + 
+  labs(x = NULL, y = NULL)
+```
