@@ -48,7 +48,7 @@ SEM_sensrange <- function(pars,
   func <- function(pars){
     
     new_params_df <- internal_update_params(df = param_df, new = pars)
-    return(run_SEM(pest = pest, pest.time = pest.time, inputs = inputs,
+    return(run_SEM_internal(pest = pest, pest.time = pest.time, inputs = inputs,
                    X = pools, param_df = new_params_df, DBH = DBH))
   }
   
@@ -101,7 +101,7 @@ SEM_sensfunc <- function(pars,
   func <- function(pars){
     
     new_params_df <- internal_update_params(df = param_df, new = pars)
-    return(run_SEM(pest = pest, pest.time = pest.time, inputs = inputs,
+    return(run_SEM_internal(pest = pest, pest.time = pest.time, inputs = inputs,
                    X = pools, param_df = new_params_df, DBH = DBH))
   }
   

@@ -2,22 +2,19 @@
 % Please edit documentation in R/SEM_model.R
 \name{run_SEM}
 \alias{run_SEM}
-\title{Run the SEM}
+\title{Run SEM}
 \usage{
-run_SEM(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE)
+run_SEM(
+  inputs,
+  X,
+  param_df,
+  DBH = 10,
+  pest = c(phloem = 0, xylem = 0, leaf = 0, root = 0, stem = 0),
+  pest.time = NULL,
+  quiet = TRUE
+)
 }
 \arguments{
-\item{pest}{named vector for the pest impacts
-\describe{
-\item{phloem}{phloem feaders}
-\item{xylem}{xylem disrupters (bark beetle, canker, wilt, girdling)}
-\item{leaf}{defoliators}
-\item{root}{root rot}
-\item{stem}{stem rot}
-}}
-
-\item{pest.time}{NULL or vector of the times to apply the pest disturbance to}
-
 \item{inputs}{named numeric vector containing the meteorological variables at a single time point
 \describe{
 \item{temp}{Air temperature, degrees C}
@@ -25,9 +22,8 @@ run_SEM(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE)
 \item{VPD}{Vapor pressure deficit, kPa}
 \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
 \item{time}{as.POSIXct date fromat, must be every 30 min, TODO there needs to be some better way to handle the dates}
-}}
-
-\item{X}{named numeric vector containing the following
+}
+#' @param X named numeric vector containing the following
 \describe{
 \item{leaf}{kg/plant}
 \item{wood}{kg/plant}
@@ -46,11 +42,22 @@ run_SEM(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE)
 
 \item{DBH}{diameter at breast height default value set to 10}
 
+\item{pest}{named vector for the pest impacts, default set to 0 pests
+\describe{
+\item{phloem}{phloem feaders}
+\item{xylem}{xylem disrupters (bark beetle, canker, wilt, girdling)}
+\item{leaf}{defoliators}
+\item{root}{root rot}
+\item{stem}{stem rot}
+}}
+
+\item{pest.time}{NULL or vector of the times to apply the pest disturbance to}
+
 \item{quiet}{boolean default set to TRUE if set to FALSE will print date}
 }
 \value{
-vector of results
+data frame of model results
 }
 \description{
-Run the SEM
+Run SEM
 }

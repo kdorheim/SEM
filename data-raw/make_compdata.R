@@ -65,6 +65,6 @@ p_df <- data.frame(parameter = names(params))
 names(params) <- NULL
 p_df$value <- params
 
-SEMout <- run_SEM(pest = pest0, pest.time = NULL, inputs = met_input_df, X = X, param_df = p_df)
+SEMout <- run_SEM_internal(pest = pest0, pest.time = NULL, inputs = met_input_df, X = X, param_df = p_df)
 write.csv(SEMout, file = "tests/testthat/comp_data.csv", row.names = FALSE)
 
