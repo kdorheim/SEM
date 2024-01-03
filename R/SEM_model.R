@@ -362,7 +362,7 @@ run_SEM_internal <- function(pest, pest.time, inputs, X, param_df, DBH = 10, qui
 #' \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
 #' \item{time}{as.POSIXct date fromat, must be every 30 min, TODO there needs to be some better way to handle the dates}
 #' }
-#' #' @param X named numeric vector containing the following
+#' @param X named numeric vector containing the following
 #' \describe{
 #' \item{leaf}{kg/plant}
 #' \item{wood}{kg/plant}
@@ -389,14 +389,14 @@ run_SEM_internal <- function(pest, pest.time, inputs, X, param_df, DBH = 10, qui
 #' @param pest.time NULL or vector of the times to apply the pest disturbance to 
 #' @param quiet boolean default set to TRUE if set to FALSE will print date
 #' @return data frame of model results
-#' @importFrom tidyr pivot_longer
-#' @importFrom dplyr right_join
 #' @export
 run_SEM <- function(inputs, X, param_df, DBH = 10, 
                     pest = c("phloem" = 0,  "xylem" = 0, "leaf" = 0, 
                              "root" = 0, "stem" = 0), 
                     pest.time = NULL, 
                     quiet = TRUE){
+  
+  variable <- . <- NULL
   
   # TODO 
   # Implement some sort assert checks to make sure that the time column of 
@@ -422,7 +422,7 @@ run_SEM <- function(inputs, X, param_df, DBH = 10,
   
   # Format the output for easy plotting 
   # TODO make this an internal df? 
-  output_units <- data.frame(variable = c("Bleaf", "Bwood", "Broot", "Bstore",
+  output_units <- data.table(variable = c("Bleaf", "Bwood", "Broot", "Bstore",
                                           "BSOM", "Water", "density", "GPP", 
                                           "fopen", "RstemRroot", "Rgrow", "LAI", 
                                           "Rh", "Rleaf"), 
@@ -431,14 +431,14 @@ run_SEM <- function(inputs, X, param_df, DBH = 10,
                                        "umol/sec/tree", "umol/sec/tree", "unitless", "Mg/ha/sec", "umol/s/tree"))
   
   # Format the output into a long data frame 
-  long_results <- pivot_longer(output, -time, names_to = "variable")
+  long_results <- melt(data.table(output), id.vars = "time")
   
   # Double check to make sure that the mapping table is correct. 
   stopifnot(length(setdiff(unique(output_units$variable), unique(long_results$variable))) == 0)
   stopifnot(length(setdiff(unique(long_results$variable), unique(output_units$variable))) == 0)
   
   # Add the units column. 
-  final_output <- right_join(long_results, output_units, by = "variable") 
+  final_output <- as.data.frame(long_results[output_units, on = .(variable)])
   
   return(final_output)
 }

@@ -22,8 +22,9 @@ run_SEM(
 \item{VPD}{Vapor pressure deficit, kPa}
 \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
 \item{time}{as.POSIXct date fromat, must be every 30 min, TODO there needs to be some better way to handle the dates}
-}
-#' @param X named numeric vector containing the following
+}}
+
+\item{X}{named numeric vector containing the following
 \describe{
 \item{leaf}{kg/plant}
 \item{wood}{kg/plant}

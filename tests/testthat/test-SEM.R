@@ -78,11 +78,6 @@ test_that("SEM", {
 
 test_that("run_SEM_internal control run", {  
   
-  inputs <- data.frame("PAR" = PAR, 
-                       "temp" = temp, 
-                       "VPD" = VPD, 
-                       "precip" = precip, 
-                       "time" = time)
   
   p_df <- data.frame(parameter = names(params))
   names(params) <- NULL
