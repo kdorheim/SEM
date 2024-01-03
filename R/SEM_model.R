@@ -229,6 +229,8 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   
   # Mortality  ----------
   if (X[["storage"]] <= params[["NSCthreshold"]] * Smax) {
+    message("Mortality if statement triggered may fail on next time step")
+    message("Current time is : ", inputs[["time"]])
     X[["stem_density"]] <- 0
   } else {
     mortRate <- (pest[["stem"]] + params[["mort1"]] * exp(-params[["mort2"]] * X[["storage"]] / Smax)) * timestep / 86400 / 365
