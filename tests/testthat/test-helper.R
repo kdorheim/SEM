@@ -17,7 +17,7 @@ test_that("check_contents works", {
 
 
 test_that("check_SEM_run_setup", {
-  
+
   p_df <- params_df
   DBH <- 10
   
@@ -25,8 +25,10 @@ test_that("check_SEM_run_setup", {
   temp <- c(-5.1, -5.2, -5.1, -5.1, -5.1, -5.0)
   VPD <- c(0.009, 0.010, 0.009, 0.010, 0.010, 0.009)
   precip <- rep(0, 6)
+
   
   time <- c(200701010000, 200701010030, 200701010100, 200701010130, 200701010200, 200701010230)
+
   inputs <- data.frame(PAR = PAR, temp = temp, VPD = VPD, precip = precip, time = time)
   
   X <- pools

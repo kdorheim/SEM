@@ -29,7 +29,7 @@
 #' @return vector of results
 #' @noRd
 SEM <- function(X, params, inputs, pest, timestep = 1800) {
-  
+
   # Constants
   rho <- 1.15           # density of air, kg/m3 
   P <- 101.325          # average atm pressure (kPa)
@@ -59,11 +59,13 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
     # Otherwise plant available moisture is half of the linear relationship. 
     paw <- 0.5 * X[["soil_water"]] * X[["soil_water"]] / params[["Wthresh"]]
   }
+
   
   # Determine the potential rate of water uptake based on the availability 
   # and also on the amount of tree available, umol/m2Ground/s
   supply <- (1 - pest[["xylem"]]) * X[["root"]] * params[["Kroot"]] * paw * X[["stem_density"]] 
   
+
   # Update biomass based on turnover  --------- 
   # Use leaf/stem/root turnover rate to calculate the litter pools, then 
   # update the biomass pools appropriately. 
@@ -165,7 +167,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   Rmin = Lmin * params[["q"]]                            ## Leaf:root biomass ratio
   Smin = (Rleaf * LAI * 10000 / X[["stem_density"]] + Rstem + Rroot) * ktree * 86400 * params[["StoreMinDay"]]  ## set minimum storage based on the number of days the plant could survive
   Smax = params[["Smax"]] * Lmax                         ## Set maximum storage biomass as a multiplier to maximum leaf biomass (similar to Fisher et al 2010)
-  
+
   # Priority 3: --------
   # Allocate carbon if and only if there is enough C available to continue maintenance respiration
   if(X[["storage"]] > Smin){
@@ -298,7 +300,7 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE
                                   param_df = param_df, 
                                   DBH = DBH, 
                                   quiet = quiet))
-  
+
   
   # Extract the parameter values into a vector 
   params <- list()
@@ -309,6 +311,15 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE
   params[["Rleaf"]] <- 0.04 * params[["Vcmax"]] #Basal leaf respiration (umol/m2/s) is a fraction of the maximum carboxylation rate
   # TODO add other params such as Jmax? 
   
+  # Extract the parameter values into a vector 
+  params <- list()
+  params <- param_df$value
+  names(params) <- param_df$parameter
+  
+  # Add to certain values to the parameters list, these are values that are based on SEM assumptions. 
+  params[["Rleaf"]] <- 0.04 * params[["Vcmax"]] #Basal leaf respiration (umol/m2/s) is a fraction of the maximum carboxylation rate
+  # TODO add other params such as Jmax? 
+
   # Save a copy of the pest vector
   pest.orig <- pest
   pest <- c("phloem" = 0,  "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
@@ -345,6 +356,7 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE
   colnames(output) <- c("Bleaf", "Bwood", "Broot", "Bstore", "BSOM", "Water", 
                         "density", "GPP", "fopen", "Rleaf", "RstemRroot", 
                         "Rgrow", "LAI", "Rh")
+
   output <- cbind(time = inputs$time, data.frame(output))
   return(output)
   

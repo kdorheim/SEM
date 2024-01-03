@@ -52,9 +52,11 @@ test_that("SEM", {
   
   pest4 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
   out4 <- SEM(X = X, params = params, inputs = inputs, pest = pest4)
+
   expected_out4 <- c(2.579276e+00, 2.695606e+01, 4.744574e-04, 2.579324e+00, 9.999959e+00,
                      9.999991e-01, 6.999997e+02, 3.535938e+01, 1.000000e+00, 5.729220e+00, 
                      4.158068e-01, 7.248791e+00, 1.805493e+00, 2.300471e-01)
+
   expect_equal(out4, expected_out4, tolerance = test_tol)
   
   pest5 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 1)

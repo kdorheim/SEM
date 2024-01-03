@@ -47,7 +47,7 @@ check_SEM_run_setup <- function(pest, pest.time, inputs, X, param_df, DBH, quiet
   # this is not the most robust way of handeling dates or fool proof for checking for 30 mins. 
   assert_that(all(nchar(inputs$time) == 12), msg = "time column requires yyyymmddhhmm format")
   #assert_that(min(diff(inputs$time)) == 30, msg = "data should be half hourly")
-    assert_that(is.data.frame(param_df))
+  assert_that(is.data.frame(param_df))
   assert_that(check_contents(req = c("value", "parameter"), check = names(param_df)))
   assert_that(is.numeric(DBH), msg = "DBH must be numeric")
   
@@ -69,6 +69,7 @@ check_SEM_run_setup <- function(pest, pest.time, inputs, X, param_df, DBH, quiet
   
   return(TRUE)
 }
+
 
 #' Update parameter values defined in the \code{params_df} 
 #'

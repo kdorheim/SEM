@@ -55,6 +55,7 @@ ballberry <- function(input, BBparams, Fparams, obs) {
   #             msg = "obs")
   # assert_that(check_contents(req = c("g0", "m"), check = names(BBparams)),
   #             msg = "BBparams")
+
   
   ## is actually the Medlyn et al 2011 model
   Ci <- obs[["Ca"]] - 1.6 * input[1] / input[2] # intercellular  CO2 concentration is
