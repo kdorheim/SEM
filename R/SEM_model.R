@@ -229,6 +229,8 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   
   # Mortality  ----------
   if (X[["storage"]] <= params[["NSCthreshold"]] * Smax) {
+    message("Mortality if statement triggered may fail on next time step")
+    message("Current time is : ", inputs[["time"]])
     X[["stem_density"]] <- 0
   } else {
     mortRate <- (pest[["stem"]] + params[["mort1"]] * exp(-params[["mort2"]] * X[["storage"]] / Smax)) * timestep / 86400 / 365
@@ -286,21 +288,8 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
 #' @param DBH diameter at breast height default value set to 10
 #' @param quiet boolean default set to TRUE if set to FALSE will print date
 #' @return vector of results
-#' @export
-run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE){
-  
-  # TODO 
-  # Implement some sort of handle time colum of the inputs df.
-  
-  # Check all of inputs to the run SEM function.
-  assert_that(check_SEM_run_setup(pest = pest,
-                                  pest.time = pest.time,
-                                  inputs = inputs,
-                                  X = X,
-                                  param_df = param_df, 
-                                  DBH = DBH, 
-                                  quiet = quiet))
-
+#' @noRd
+run_SEM_internal <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE){
   
   # Extract the parameter values into a vector 
   params <- list()
@@ -361,4 +350,97 @@ run_SEM <- function(pest, pest.time, inputs, X, param_df, DBH = 10, quiet = TRUE
   return(output)
   
   
+}
+
+
+
+#' Run SEM 
+#' 
+#' @param inputs named numeric vector containing the meteorological variables at a single time point
+#' \describe{
+#' \item{temp}{Air temperature, degrees C}
+#' \item{precip}{Precipitation, mm}
+#' \item{VPD}{Vapor pressure deficit, kPa}
+#' \item{PAR}{Incoming photosynthetically active radiation, umol/m2/s}
+#' \item{time}{as.POSIXct date fromat, must be every 30 min, TODO there needs to be some better way to handle the dates}
+#' }
+#' @param X named numeric vector containing the following
+#' \describe{
+#' \item{leaf}{kg/plant}
+#' \item{wood}{kg/plant}
+#' \item{root}{kg/plant}
+#' \item{storage}{kg/plant}
+#' \item{som}{soil organic matter, Mg/ha}
+#' \item{soil_water}{m}
+#' \item{stem_density}{stems/ha}
+#' }
+#' @param param_df dataframe containing the following
+#' \describe{
+#' \item{parameter}{character of the parameter name}
+#' \item{value}{double parameter values}
+#' }
+#' @param DBH diameter at breast height default value set to 10
+#' @param pest named vector for the pest impacts, default set to 0 pests 
+#' \describe{
+#' \item{phloem}{phloem feaders}
+#' \item{xylem}{xylem disrupters (bark beetle, canker, wilt, girdling)}
+#' \item{leaf}{defoliators}
+#' \item{root}{root rot}
+#' \item{stem}{stem rot}
+#' }
+#' @param pest.time NULL or vector of the times to apply the pest disturbance to 
+#' @param quiet boolean default set to TRUE if set to FALSE will print date
+#' @return data frame of model results
+#' @export
+run_SEM <- function(inputs, X, param_df, DBH = 10, 
+                    pest = c("phloem" = 0,  "xylem" = 0, "leaf" = 0, 
+                             "root" = 0, "stem" = 0), 
+                    pest.time = NULL, 
+                    quiet = TRUE){
+  
+  variable <- . <- NULL
+  
+  # TODO 
+  # Implement some sort assert checks to make sure that the time column of 
+  # inputs is correct, nothing is missing and so on. 
+  
+  # Check all of inputs to the run SEM function.
+  assert_that(check_SEM_run_setup(pest = pest,
+                                  pest.time = pest.time,
+                                  inputs = inputs,
+                                  X = X,
+                                  param_df = param_df,
+                                  DBH = DBH,
+                                  quiet = quiet))
+  
+  # Run the model!
+  output <- run_SEM_internal(pest = pest,
+                             pest.time = pest.time, 
+                             inputs = inputs, 
+                             X = X, 
+                             param_df = param_df, 
+                             DBH = DBH, 
+                             quiet = quiet)
+  
+  # Format the output for easy plotting 
+  # TODO make this an internal df? 
+  output_units <- data.table(variable = c("Bleaf", "Bwood", "Broot", "Bstore",
+                                          "BSOM", "Water", "density", "GPP", 
+                                          "fopen", "RstemRroot", "Rgrow", "LAI", 
+                                          "Rh", "Rleaf"), 
+                             units = c("kg/plant", "kg/plant", "kg/plant", "kg/plant", "Mg/ha", 
+                                       "m", "stems/ha", "umol/s/tree", "stomatal conductance", 
+                                       "umol/sec/tree", "umol/sec/tree", "unitless", "Mg/ha/sec", "umol/s/tree"))
+  
+  # Format the output into a long data frame 
+  long_results <- melt(data.table(output), id.vars = "time")
+  
+  # Double check to make sure that the mapping table is correct. 
+  stopifnot(length(setdiff(unique(output_units$variable), unique(long_results$variable))) == 0)
+  stopifnot(length(setdiff(unique(long_results$variable), unique(output_units$variable))) == 0)
+  
+  # Add the units column. 
+  final_output <- as.data.frame(long_results[output_units, on = .(variable)])
+  
+  return(final_output)
 }

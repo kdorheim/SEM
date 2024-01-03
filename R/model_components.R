@@ -55,7 +55,7 @@ ballberry <- function(input, BBparams, Fparams, obs) {
   #             msg = "obs")
   # assert_that(check_contents(req = c("g0", "m"), check = names(BBparams)),
   #             msg = "BBparams")
-
+  
   
   ## is actually the Medlyn et al 2011 model
   Ci <- obs[["Ca"]] - 1.6 * input[1] / input[2] # intercellular  CO2 concentration is
@@ -66,7 +66,7 @@ ballberry <- function(input, BBparams, Fparams, obs) {
   # Error between ‘Ball-Berry’ model for predicting stomatal conductance and water use efficiency 
   # with the estimated one from the optim routine 
   e2 <- (BBparams[["g0"]] + BBparams[["m"]] * input[1] / ((obs[["Ca"]] - Fparams[["Gstar"]]) *
-                                                          (1 + obs[["VPD"]])) - input[2]) * 100  
+                                                            (1 + obs[["VPD"]])) - input[2]) * 100  
   
   # error value that will be minimized 
   out <- e1^2 + e2^2
@@ -145,15 +145,23 @@ solve.FVcB <- function(Vcmax, Jmax, Rleaf, Gstar, alpha, m, g0, VPD, PAR, Km,
   Fparams <- c(Vcmax=Vcmax, Jmax=Jmax, Rleaf=Rleaf, Gstar=Gstar, alpha=alpha, Km=Km)
   obs <- c(Ca=Ca, VPD=VPD, PAR=PAR)
   
+  out <- tryCatch({
+    fit <- optim(inital_guess,			  # solve simultaneously for An.pred and gs.pred
+                 fn = ballberry,
+                 BBparams = BBparams,	# Ballberry params                                                                                                                                                                                                                                                                                                            
+                 Fparams = Fparams,	  # Farquhar params
+                 method = "L-BFGS-B",
+                 obs = obs, 
+                 lower = c(1e-15, 1e-15),
+                 upper = Inf)		
+    
+    return(fit$par)
+    
+  }, 
+  error = function(e){ 
+    out <- c(0, 0)
+    return(out)
+  })
   
-  fit <- optim(inital_guess,			  # solve simultaneously for An.pred and gs.pred
-               fn = ballberry,
-               BBparams = BBparams,	# Ballberry params                                                                                                                                                                                                                                                                                                            
-               Fparams = Fparams,	  # Farquhar params
-               method = "L-BFGS-B",
-               obs = obs, 
-               lower = c(1e-15, 1e-15),
-               upper = Inf)		
-  
-  return(fit$par)
+  return(out)
 }

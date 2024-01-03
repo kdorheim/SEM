@@ -11,7 +11,7 @@ test_that("output data has not changed", {
   pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
 
   xx <- read_SEM_met("inputs.csv")
-  SEMout <- run_SEM(pest = pest0, pest.time = NULL, inputs = xx, X = X, param_df = p_df)
+  SEMout <- run_SEM_internal(pest = pest0, pest.time = NULL, inputs = xx, X = X, param_df = p_df)
   
   
   comp_data <- read.csv("comp_data.csv")

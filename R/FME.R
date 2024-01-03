@@ -45,11 +45,20 @@ SEM_sensrange <- function(pars,
                           pest = c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0), 
                           pest.time = NULL, ...){
   
+  
+  assert_that(check_SEM_run_setup(pest = pest,
+                                  pest.time = pest.time,
+                                  inputs = inputs,
+                                  X = X,
+                                  param_df = param_df,
+                                  DBH = DBH,
+                                  quiet = FALSE))
+  
   func <- function(pars){
     
     new_params_df <- internal_update_params(df = param_df, new = pars)
-    return(run_SEM(pest = pest, pest.time = pest.time, inputs = inputs,
-                   X = pools, param_df = new_params_df, DBH = DBH))
+    return(run_SEM_internal(pest = pest, pest.time = pest.time, inputs = inputs,
+                   X = X, param_df = new_params_df, DBH = DBH))
   }
   
   return(FME::sensRange(func, parms = pars, parRange = parRange, ...))
@@ -98,11 +107,21 @@ SEM_sensfunc <- function(pars,
                          DBH,
                          pest = c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0), 
                          pest.time = NULL, ...){ 
+  
+  
+  assert_that(check_SEM_run_setup(pest = pest,
+                                  pest.time = pest.time,
+                                  inputs = inputs,
+                                  X = X,
+                                  param_df = param_df,
+                                  DBH = DBH,
+                                  quiet = FALSE))
+  
   func <- function(pars){
     
     new_params_df <- internal_update_params(df = param_df, new = pars)
-    return(run_SEM(pest = pest, pest.time = pest.time, inputs = inputs,
-                   X = pools, param_df = new_params_df, DBH = DBH))
+    return(run_SEM_internal(pest = pest, pest.time = pest.time, inputs = inputs,
+                   X = X, param_df = new_params_df, DBH = DBH))
   }
   
   return(FME::sensFun(func, parms = pars, ...))
@@ -132,12 +151,12 @@ format_sensout <- function(obj){
   
   if(class(obj)[[1]] == "sensFun"){
     
-    out <- data.table::as.data.table(obj)
+    out <- as.data.table(obj)
     names(out)[1] <- "time"
     names(out)[2] <- "variable"
     params <- names(out)[3:ncol(out)]
     
-    out <- data.table::melt(out, id.vars = c("time", "variable"),
+    out <- melt(out, id.vars = c("time", "variable"),
                             value.name = "value", variable.name = "parameter")
     
   }
