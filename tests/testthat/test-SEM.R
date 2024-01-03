@@ -16,10 +16,18 @@ time <- c(200701010000, 200701010030, 200701010100, 200701010130, 200701010200, 
 
 X <- pools 
 
-test_that("SEM", {
+inputs <- data.frame("PAR" = PAR, 
+                     "temp" = temp, 
+                     "VPD" = VPD, 
+                     "precip" = precip, 
+                     "time" = time)
 
+
+test_that("SEM", {
+  
   inputs <- data.frame(PAR = 187.2, temp = -6.2, VPD = 0.013, precip = 0)
   
+
   # Try out the different pest configurations!
   pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
   out0 <- SEM(X = X, params = params, inputs = inputs, pest = pest0)
@@ -68,7 +76,7 @@ test_that("SEM", {
   
 })
 
-test_that("run_SEM control run", {  
+test_that("run_SEM_internal control run", {  
   
   inputs <- data.frame("PAR" = PAR, 
                        "temp" = temp, 
@@ -80,7 +88,7 @@ test_that("run_SEM control run", {
   names(params) <- NULL
   p_df$value <- params
   pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
-  SEMout <- run_SEM(pest = pest0, pest.time = NULL, inputs = inputs, X = X, param_df = p_df)
+  SEMout <- run_SEM_internal(pest = pest0, pest.time = NULL, inputs = inputs, X = X, param_df = p_df)
   
   leaf <- c(2.579324, 2.579339 ,2.579352, 2.579365, 2.579378, 2.579391)
   wood <- c(26.95628, 26.95648, 26.95668, 26.95688, 26.95707, 26.95727)
@@ -111,7 +119,7 @@ test_that("run_SEM control run", {
 })
 
 
-test_that("run_SEM disturbance", {
+test_that("run_SEM_internal disturbance", {
   
   
   inputs <- data.frame("PAR" = PAR, 
@@ -124,39 +132,46 @@ test_that("run_SEM disturbance", {
   names(params) <- NULL
   p_df$value <- params
   pest0 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
-  SEMout0 <- run_SEM(pest = pest0, pest.time = NULL, inputs = inputs, X = X, param_df = p_df)
+  SEMout0 <- run_SEM_internal(pest = pest0, pest.time = NULL, inputs = inputs, X = X, param_df = p_df)
   
   # Make sure that the disturbances affect the expected SEM output 
   pest_time <- inputs$time[2]
 
   pest_phloem1 <- c("phloem" = 1, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
-  SEMout_phloem1 <- run_SEM(pest = pest_phloem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  SEMout_phloem1 <- run_SEM_internal(pest = pest_phloem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
   expect_gt(object =  mean(abs(SEMout0$Rgrow - SEMout_phloem1$Rgrow)), expected = 0)
   
   pest_xylem1 <- c("phloem" = 0, "xylem" = 1, "leaf" = 0, "root" = 0, "stem" = 0)
-  SEMout_xylem1  <- run_SEM(pest = pest_xylem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  SEMout_xylem1  <- run_SEM_internal(pest = pest_xylem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
   expect_gt(object =  mean(abs(SEMout0$GPP - SEMout_xylem1$GPP)), expected = 0)
 
   pest_leaf1 <- c("phloem" = 0, "xylem" = 0, "leaf" = 1, "root" = 0, "stem" = 0)
-  SEMout_leaf1 <- run_SEM(pest = pest_leaf1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  SEMout_leaf1 <- run_SEM_internal(pest = pest_leaf1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
   expect_gt(object =  mean(abs(SEMout0$Bleaf - SEMout_leaf1$Bleaf)), expected = 0)
   
   
   # # TODO Not confident about the implementation of the root and stem pest treatments
   # # Figure out the correct way to do this and then activate these tests.  
   # pest_root1 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 1, "stem" = 0)
-  # SEMout_root1 <- run_SEM(pest = pest_root1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  # SEMout_root1 <- run_SEM_internal(pest = pest_root1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
   # 
   # pest_stem1 <- c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 1)
-  # SEMout_stem1 <- run_SEM(pest = pest_stem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  # SEMout_stem1 <- run_SEM_internal(pest = pest_stem1, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
 
 
   # Test to see if multiple time step disturbance works... 
   pest_time <- inputs$time[2:5]
   pest_xylem_p5 <- c("phloem" = 0, "xylem" = 0.5, "leaf" = 0, "root" = 0, "stem" = 0)
-  SEMout_xylem_p5 <- run_SEM(pest = pest_xylem_p5, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
+  SEMout_xylem_p5 <- run_SEM_internal(pest = pest_xylem_p5, pest.time = pest_time, inputs = inputs, X = X, param_df = p_df)
   expect_gt(object = mean(abs(SEMout_xylem1$GPP - SEMout_xylem_p5$GPP)), expected = 0)
   
   })
 
+test_that("run_SEM", {
+  # Since all of the components are tested separately and the internal SEM function is 
+  # checked in the two tests above in this test we just need to make sure that 
+  # the function runs as expected. 
+  out <- run_SEM(inputs = inputs, X = pools, param_df = params_df)
+  expect_true(is.data.frame(out))
+})
 

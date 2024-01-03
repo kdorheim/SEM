@@ -45,10 +45,19 @@ SEM_sensrange <- function(pars,
                           pest = c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0), 
                           pest.time = NULL, ...){
   
+  
+  assert_that(check_SEM_run_setup(pest = pest,
+                                  pest.time = pest.time,
+                                  inputs = inputs,
+                                  X = X,
+                                  param_df = param_df,
+                                  DBH = DBH,
+                                  quiet = quiet))
+  
   func <- function(pars){
     
     new_params_df <- internal_update_params(df = param_df, new = pars)
-    return(run_SEM(pest = pest, pest.time = pest.time, inputs = inputs,
+    return(run_SEM_internal(pest = pest, pest.time = pest.time, inputs = inputs,
                    X = pools, param_df = new_params_df, DBH = DBH))
   }
   
@@ -98,10 +107,20 @@ SEM_sensfunc <- function(pars,
                          DBH,
                          pest = c("phloem" = 0, "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0), 
                          pest.time = NULL, ...){ 
+  
+  
+  assert_that(check_SEM_run_setup(pest = pest,
+                                  pest.time = pest.time,
+                                  inputs = inputs,
+                                  X = X,
+                                  param_df = param_df,
+                                  DBH = DBH,
+                                  quiet = quiet))
+  
   func <- function(pars){
     
     new_params_df <- internal_update_params(df = param_df, new = pars)
-    return(run_SEM(pest = pest, pest.time = pest.time, inputs = inputs,
+    return(run_SEM_internal(pest = pest, pest.time = pest.time, inputs = inputs,
                    X = pools, param_df = new_params_df, DBH = DBH))
   }
   
