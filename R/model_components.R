@@ -145,23 +145,15 @@ solve.FVcB <- function(Vcmax, Jmax, Rleaf, Gstar, alpha, m, g0, VPD, PAR, Km,
   Fparams <- c(Vcmax=Vcmax, Jmax=Jmax, Rleaf=Rleaf, Gstar=Gstar, alpha=alpha, Km=Km)
   obs <- c(Ca=Ca, VPD=VPD, PAR=PAR)
   
-  out <- tryCatch({
-    fit <- optim(inital_guess,			  # solve simultaneously for An.pred and gs.pred
-                 fn = ballberry,
-                 BBparams = BBparams,	# Ballberry params                                                                                                                                                                                                                                                                                                            
-                 Fparams = Fparams,	  # Farquhar params
-                 method = "L-BFGS-B",
-                 obs = obs, 
-                 lower = c(1e-15, 1e-15),
-                 upper = Inf)		
-    
-    return(fit$par)
-    
-  }, 
-  error = function(e){ 
-    out <- c(0, 0)
-    return(out)
-  })
+  out <- optim(inital_guess,			  # solve simultaneously for An.pred and gs.pred
+               fn = ballberry,
+               BBparams = BBparams,	# Ballberry params                                                                                                                                                                                                                                                                                                            
+               Fparams = Fparams,	  # Farquhar params
+               obs = obs)		
   
-  return(out)
+  if(any(out$par<=0)){
+    return(c(0,0))
+  } else { 
+    return(out$par)
+  }
 }

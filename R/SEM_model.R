@@ -92,7 +92,7 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   # Ball–Berry stomatal conductance model (Medlyn et al. 2011) and scaled to
   # gross primary productivity (GPP) based on leaf area index (LAI).
   Ags = c(0, 0) # Arg[1] = Photosynthesis, Arg[2] = water use
-  if(inputs[["PAR"]] > 1e-20){
+  if(inputs[["PAR"]] > 1e-8){
     
     Vcmax_adj <- arrhenius(params[["Vcmax"]], inputs[["temp"]])
     Jmax_adj <- arrhenius(params[["Jmax"]], inputs[["temp"]])
