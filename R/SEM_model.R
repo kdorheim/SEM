@@ -4,7 +4,6 @@
 #' \describe{
 #' \item{leaf}{kg/plant}
 #' \item{wood}{kg/plant}
-#' \item{root}{kg/plant}
 #' \item{storage}{kg/plant}
 #' \item{som}{soil organic matter, Mg/ha}
 #' \item{soil_water}{m}
@@ -229,9 +228,14 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
   
   # Mortality  ----------
   if (X[["storage"]] <= params[["NSCthreshold"]] * Smax) {
-    message("Mortality if statement triggered may fail on next time step")
+    message("Smax is:", Smax)
+    message("Mortality if statement")
     message("Current time is : ", inputs[["time"]])
-    X[["stem_density"]] <- 0
+    #X[["stem_density"]] <- 0
+    mortRate <- (pest[["stem"]] + params[["mort1"]] * exp(- 2 * params[["mort2"]] * X[["storage"]] / Smax)) * timestep / 86400 / 365
+    X[["som"]] <- X[["som"]] + X[["stem_density"]] * mortRate * sum(c(X[["leaf"]], X[["wood"]], X[["root"]], X[["storage"]])) / 1000 ## dead trees go to SOM
+    X[["stem_density"]] <- X[["stem_density"]] * (1 - mortRate) ## reduce density but not per-tree pools
+    
   } else {
     mortRate <- (pest[["stem"]] + params[["mort1"]] * exp(-params[["mort2"]] * X[["storage"]] / Smax)) * timestep / 86400 / 365
     X[["som"]] <- X[["som"]] + X[["stem_density"]] * mortRate * sum(c(X[["leaf"]], X[["wood"]], X[["root"]], X[["storage"]])) / 1000 ## dead trees go to SOM
@@ -336,7 +340,7 @@ run_SEM_internal <- function(pest, pest.time, inputs, X, param_df, DBH = 10, qui
     # Check time
     date <- format(inputs$time[index], format = "%d")
     hms <- format(inputs$time[index], format = "%H:%M:%S")
-    if (!quiet) if(date == "01" & hms == "00:00:00"){print(inputs$time[index])}
+    if (!quiet) {print(inputs$time[index])}
     
   } 
   
