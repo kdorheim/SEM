@@ -12,6 +12,10 @@ time_time[index] <- paste0(time_time[index], "000000")
 time <- substr(x = time_time, start = 1, stop = 12)
 example_inputs$time <- time
 
+# Remove the duplicated time steps
+dup_index <- which(duplicated(example_inputs$time))
+example_inputs[dup_index, ] <- NA
+example_inputs <- na.omit(example_inputs)
 
 write.csv(example_inputs, "./inst/metdata/example_inputs.csv", row.names = FALSE)
 
