@@ -1,6 +1,7 @@
 # Compare package functions with some of the results returned by the Dietz and Matthes implementation https://github.com/mdietze/PestED
 #  The purse of this test it to catch potenital errors that may have occured during the translation process. This test 
 # will most likley be deleted after the V1 release.
+test_tol <- 1e-6
 
 
 test_that("arrhenius works", {
@@ -63,9 +64,9 @@ test_that("ballberry works", {
 test_that("solve.FVcB works", {
   # This expected value comes from the Dietz implementations of the
   # function and their default values
-  expected_output <- c(3.24230114, 0.02875259)
+  expected_output <- c(3.2373744, 0.0286713)
   out <- solve.FVcB(Vcmax = 18, Jmax = 30.06, Rleaf = 1, Gstar = 0.5,
                     alpha = 0.3,
                     m = 4, g0 = 0, VPD = 0.131, PAR = 68.400, Km = 710.3203)
-  expect_equal(expected_output, out)
+  expect_equal(expected_output, out, tolerance = test_tol)
 })

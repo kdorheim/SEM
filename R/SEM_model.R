@@ -304,15 +304,6 @@ run_SEM_internal <- function(pest, pest.time, inputs, X, param_df, DBH = 10, qui
   params[["Rleaf"]] <- 0.04 * params[["Vcmax"]] #Basal leaf respiration (umol/m2/s) is a fraction of the maximum carboxylation rate
   # TODO add other params such as Jmax? 
   
-  # Extract the parameter values into a vector 
-  params <- list()
-  params <- param_df$value
-  names(params) <- param_df$parameter
-  
-  # Add to certain values to the parameters list, these are values that are based on SEM assumptions. 
-  params[["Rleaf"]] <- 0.04 * params[["Vcmax"]] #Basal leaf respiration (umol/m2/s) is a fraction of the maximum carboxylation rate
-  # TODO add other params such as Jmax? 
-
   # Save a copy of the pest vector
   pest.orig <- pest
   pest <- c("phloem" = 0,  "xylem" = 0, "leaf" = 0, "root" = 0, "stem" = 0)
