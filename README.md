@@ -1,6 +1,11 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+Feb 18 2024
+
+This project was put on pause with no additional plans for further
+devlopment.
+
 # SEM
 
 <!-- badges: TODO zenodo -->

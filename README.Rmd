@@ -13,6 +13,12 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+Feb 18 2024 
+
+This project was put on pause with no additional plans for further devlopment. 
+
+
 # SEM
 
 <!-- badges: TODO zenodo -->
@@ -28,3 +34,7 @@ You can install the development version of SEM from [GitHub](https://github.com/
 # install.packages("devtools")
 devtools::install_github("kdorheim/SEM")
 ```
+
+
+
+
