@@ -232,10 +232,9 @@ SEM <- function(X, params, inputs, pest, timestep = 1800) {
     message("Mortality if statement")
     message("Current time is : ", inputs[["time"]])
     #X[["stem_density"]] <- 0
-    mortRate <- (pest[["stem"]] + params[["mort1"]] * exp(- 2 * params[["mort2"]] * X[["storage"]] / Smax)) * timestep / 86400 / 365
-    X[["som"]] <- X[["som"]] + X[["stem_density"]] * mortRate * sum(c(X[["leaf"]], X[["wood"]], X[["root"]], X[["storage"]])) / 1000 ## dead trees go to SOM
-    X[["stem_density"]] <- X[["stem_density"]] * (1 - mortRate) ## reduce density but not per-tree pools
-    
+     mortRate <- (pest[["stem"]] + params[["mort1"]] * exp(- 2 * params[["mort2"]] * X[["storage"]] / Smax)) * timestep / 86400 / 365
+     X[["som"]] <- X[["som"]] + X[["stem_density"]] * mortRate * sum(c(X[["leaf"]], X[["wood"]], X[["root"]], X[["storage"]])) / 1000 ## dead trees go to SOM
+     X[["stem_density"]] <- X[["stem_density"]] * (1 - mortRate) ## reduce density but not per-tree pools
   } else {
     mortRate <- (pest[["stem"]] + params[["mort1"]] * exp(-params[["mort2"]] * X[["storage"]] / Smax)) * timestep / 86400 / 365
     X[["som"]] <- X[["som"]] + X[["stem_density"]] * mortRate * sum(c(X[["leaf"]], X[["wood"]], X[["root"]], X[["storage"]])) / 1000 ## dead trees go to SOM
